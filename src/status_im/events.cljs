@@ -743,6 +743,16 @@
    (hardwallet/set-nfc-enabled cofx enabled?)))
 
 (handlers/register-handler-fx
+ :hardwallet.callback/on-tag-discovered
+ (fn [cofx [_ data]]
+   (hardwallet/on-tag-discovered cofx data)))
+
+(handlers/register-handler-fx
+ :hardwallet/unregister-tag-event
+ (fn [_ _]
+   {:hardwallet/unregister-tag-event nil}))
+
+(handlers/register-handler-fx
  :hardwallet.ui/status-hardwallet-option-pressed
  (fn [cofx _]
    (hardwallet/navigate-to-connect-screen cofx)))

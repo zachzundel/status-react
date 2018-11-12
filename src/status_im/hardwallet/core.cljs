@@ -4,7 +4,8 @@
             [status-im.ui.screens.navigation :as navigation]
             [status-im.utils.config :as config]
             [status-im.utils.fx :as fx]
-            [status-im.utils.platform :as platform]))
+            [status-im.utils.platform :as platform]
+            [taoensso.timbre :as log]))
 
 (defn check-nfc-support []
   (when config/hardwallet-enabled?
@@ -36,7 +37,8 @@
 
 (fx/defn navigate-to-connect-screen [cofx]
   (fx/merge cofx
-            {:hardwallet/check-nfc-enabled nil}
+            {:hardwallet/check-nfc-enabled  nil
+             :hardwallet/register-tag-event nil}
             (navigation/navigate-to-cofx :hardwallet-connect nil)))
 
 (defn hardwallet-supported? [db]
@@ -81,6 +83,29 @@
                  (get-in db' [:hardwallet :pin :confirmation])))
       (pin-mismatch))))
 
+(defn- register-tag-event []
+  (when config/hardwallet-enabled?
+    (.. js-dependencies/nfc-manager
+        -default
+        (registerTagEvent #(re-frame/dispatch [:hardwallet.callback/on-tag-discovered %]))
+        (then #(log/debug "[hardwallet] register tag event")))))
+
+(defn- unregister-tag-event []
+  (when config/hardwallet-enabled?
+    (.. js-dependencies/nfc-manager
+        -default
+        (unregisterTagEvent)
+        (then #(log/debug "[hardwallet] unregister tag event")))))
+
+(fx/defn on-tag-discovered [cofx data]
+  (let [data' (js->clj data :keywordize-keys true)
+        payload (get-in data' [:ndefMessage 0 :payload])]
+    (log/debug "[hardwallet] on tag discovered" data')
+    (js/alert
+     (str "tag payload: "
+          (clojure.string/join
+           (map js/String.fromCharCode payload))))))
+
 (re-frame/reg-fx
  :hardwallet/check-nfc-support
  check-nfc-support)
@@ -92,3 +117,11 @@
 (re-frame/reg-fx
  :hardwallet/open-nfc-settings
  open-nfc-settings)
+
+(re-frame/reg-fx
+ :hardwallet/register-tag-event
+ register-tag-event)
+
+(re-frame/reg-fx
+ :hardwallet/unregister-tag-event
+ unregister-tag-event)

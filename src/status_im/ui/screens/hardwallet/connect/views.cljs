@@ -13,6 +13,7 @@
 
 (defview hardwallet-connect []
   (letsubs [nfc-enabled? [:hardwallet/nfc-enabled?]]
+    {:component-will-unmount #(re-frame/dispatch [:hardwallet/unregister-tag-event])}
     [react/view styles/container
      [status-bar/status-bar]
      [react/view components.styles/flex
