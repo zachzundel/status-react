@@ -133,6 +133,12 @@
 (def estimated-time-text
   (assoc generating-codes-for-pairing-text :padding-top 25))
 
+(def recovery-phrase-description
+  {:padding 16})
+
+(def recovery-phrase-description-text
+  {:color colors/black})
+
 (def waiting-indicator-container
   {:height 200})
 

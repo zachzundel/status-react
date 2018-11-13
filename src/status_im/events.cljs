@@ -758,6 +758,19 @@
    (hardwallet/on-pairing-completed cofx)))
 
 (handlers/register-handler-fx
+ :hardwallet.callback/on-pin-validated
+ (fn [cofx _]
+   (hardwallet/on-pin-validated cofx)))
+
+(handlers/register-handler-fx
+ :hardwallet.callback/create-account-success
+ [(re-frame/inject-cofx :random-guid-generator)
+  (re-frame/inject-cofx :accounts.create/get-signing-phrase)
+  (re-frame/inject-cofx :accounts.create/get-status)]
+ (fn [cofx [_ result password]]
+   (hardwallet/on-create-account-success cofx result password)))
+
+(handlers/register-handler-fx
  :hardwallet/unregister-tag-event
  (fn [_ _]
    {:hardwallet/unregister-tag-event nil}))
@@ -819,6 +832,16 @@
    (browser/open-url "https://hardwallet.status.im" cofx)))
 
 (handlers/register-handler-fx
+ :hardwallet.ui/recovery-phrase-next-button-pressed
+ (fn [{:keys [db]} _]
+   {:db (assoc-in db [:hardwallet :setup-step] :recovery-phrase-confirm-word)}))
+
+(handlers/register-handler-fx
+ :hardwallet.ui/recovery-phrase-confirm-word-next-button-pressed
+ (fn [{:keys [db]} _]
+   {:db (assoc-in db [:hardwallet :setup-step] :recovery-phrase-confirm-word2)}))
+
+(handlers/register-handler-fx
  :hardwallet/connection-error
  (fn [_ _]
    {:utils/show-popup {:title      (i18n/label :t/cant-read-card)
@@ -866,7 +889,9 @@
 (handlers/register-handler-fx
  :hardwallet.ui/create-pin-button-pressed
  (fn [{:keys [db]} _]
-   {:db (update-in db [:hardwallet :setup-step] :pin)}))
+   {:db (-> db
+            (assoc-in [:hardwallet :setup-step] :pin)
+            (assoc-in [:hardwallet :pin :enter-step] :original))}))
 
 ;; browser module
 

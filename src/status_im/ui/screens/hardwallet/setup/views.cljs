@@ -2,6 +2,7 @@
   (:require-macros [status-im.utils.views :refer [defview letsubs]])
   (:require [re-frame.core :as re-frame]
             [reagent.core :as reagent]
+            [status-im.ui.screens.profile.seed.views :as seed.views]
             [status-im.ui.screens.hardwallet.components :as components]
             [status-im.ui.screens.hardwallet.pin.views :as pin.views]
             [status-im.ui.components.animation :as animation]
@@ -64,7 +65,6 @@
      ;TODO(dmitryn) translate
      [react/text {:style styles/estimated-time-text
                   :number-of-lines 2}
-      ;{:style {:text-align :center}}
       "Next protect ownership of the card\n creating PIN"]]]
    [react/view styles/next-button-container
     [react/view components.styles/flex]
@@ -72,6 +72,56 @@
      {:on-press #(re-frame/dispatch [:hardwallet.ui/create-pin-button-pressed])
       :label    (i18n/label :t/create-pin)
       :forward? true}]]])
+
+(defview recovery-phrase []
+  (letsubs [account [:accounts/get-by-login-address]]
+    [react/view styles/card-ready-container
+     [react/view styles/card-ready-inner-container
+      [react/view styles/center-container
+       [react/text {:style           styles/center-title-text
+                    :number-of-lines 2
+                    :font            :bold}
+        (i18n/label :t/your-recovery-phrase)]
+
+       [react/text
+        (str
+         (:mnemonic account))]
+
+               ;TODO(dmitryn) translate
+       [react/view styles/recovery-phrase-description
+        [react/text {:style styles/recovery-phrase-description-text}
+         (i18n/label :t/your-recovery-phrase-description)]]]]
+     [react/view styles/next-button-container
+      [react/view components.styles/flex]
+      [components.common/bottom-button
+       {:on-press #(re-frame/dispatch [:hardwallet.ui/recovery-phrase-next-button-pressed])
+        :label    (i18n/label :t/next)
+        :forward? true}]]]))
+
+(defview recovery-phrase-confirm-word []
+  (letsubs [pair-code [:hardwallet-pair-code]
+            width [:dimensions/window-width]]
+    [react/view styles/enter-pair-code-container
+     [react/view styles/enter-pair-code-title-container
+      [react/view
+       [react/text {:style styles/enter-pair-code-title-text
+                    :font  :bold}
+        (i18n/label :t/check-your-recovery-phrase)]
+       [react/text {:style styles/enter-pair-code-explanation-text}
+        (i18n/label :t/enter-pair-code-description)]]
+      [react/view (styles/enter-pair-code-input-container width)
+       [text-input/text-input-with-label
+        {:on-change-text    #(re-frame/dispatch [:hardwallet.ui/pair-code-input-changed %])
+         :secure-text-entry true
+         :placeholder       ""}]]]
+     [react/view styles/next-button-container
+      [react/view components.styles/flex]
+      [components.common/bottom-button
+       {:on-press  #(re-frame/dispatch [:hardwallet.ui/pair-code-next-button-pressed])
+        :disabled? (empty? pair-code)
+        :forward?  true}]]]))
+
+(def recovery-phrase-confirm-word2 recovery-phrase-confirm-word)
 
 (defview enter-pair-code []
   (letsubs [pair-code [:hardwallet-pair-code]
@@ -161,7 +211,7 @@
   {:component-did-mount (fn []
                           (utils/set-timeout
                            #(re-frame/dispatch [:hardwallet.callback/on-initialization-completed])
-                           3000))}
+                           5000))}
   [loading-view {:title-label            :t/preparing-card
                  :text-label             :t/generating-codes-for-pairing
                  :estimated-time-seconds 20
@@ -171,7 +221,7 @@
   {:component-did-mount (fn []
                           (utils/set-timeout
                            #(re-frame/dispatch [:hardwallet.callback/on-pairing-completed])
-                           3000))}
+                           5000))}
   [loading-view {:title-label            :t/pairing-card
                  :estimated-time-seconds 30}])
 
@@ -193,6 +243,9 @@
     :card-already-linked [card-already-linked]
     :pairing [pairing]
     :pin [pin.views/main]
+    :recovery-phrase [recovery-phrase]
+    :recovery-phrase-confirm-word [recovery-phrase-confirm-word]
+    :recovery-phrase-confirm-word2 [recovery-phrase-confirm-word2]
     [begin]))
 
 (defview hardwallet-setup []
