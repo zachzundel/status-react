@@ -748,6 +748,11 @@
    (hardwallet/on-tag-discovered cofx data)))
 
 (handlers/register-handler-fx
+ :hardwallet.callback/on-initialization-completed
+ (fn [cofx _]
+   (hardwallet/on-initialization-completed cofx)))
+
+(handlers/register-handler-fx
  :hardwallet/unregister-tag-event
  (fn [_ _]
    {:hardwallet/unregister-tag-event nil}))

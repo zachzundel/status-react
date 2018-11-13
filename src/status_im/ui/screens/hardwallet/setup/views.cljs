@@ -13,6 +13,7 @@
             [status-im.ui.components.styles :as components.styles]
             [status-im.ui.components.text-input.view :as text-input]
             [status-im.i18n :as i18n]
+            [status-im.utils.utils :as utils]
             [status-im.ui.components.colors :as colors]))
 
 (defn secret-keys []
@@ -150,7 +151,11 @@
     [react/activity-indicator {:animating true
                                :size      :large}]]])
 
-(defn preparing []
+(defview preparing []
+  {:component-did-mount (fn []
+                          (utils/set-timeout
+                           #(re-frame/dispatch [:hardwallet.callback/on-initialization-completed])
+                           3000))}
   [loading-view {:title-label            :t/preparing-card
                  :text-label             :t/generating-codes-for-pairing
                  :estimated-time-seconds 20
