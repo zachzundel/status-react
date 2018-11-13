@@ -110,6 +110,9 @@
 (fx/defn on-initialization-completed [{:keys [db]}]
   {:db (assoc-in db [:hardwallet :setup-step] :secret-keys)})
 
+(fx/defn on-pairing-completed [{:keys [db]}]
+  {:db (assoc-in db [:hardwallet :setup-step] :card-ready)})
+
 (re-frame/reg-fx
  :hardwallet/check-nfc-support
  check-nfc-support)

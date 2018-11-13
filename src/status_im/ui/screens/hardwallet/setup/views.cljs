@@ -20,7 +20,7 @@
   [react/view styles/secret-keys-container
    [react/view styles/secret-keys-inner-container
     [react/view styles/secret-keys-title-container
-     [components/wizard-step 2]
+     #_[components/wizard-step 2]
      [react/text {:style           styles/secret-keys-title-text
                   :number-of-lines 2
                   :font            :bold}
@@ -55,11 +55,17 @@
 (defn card-ready []
   [react/view styles/card-ready-container
    [react/view styles/card-ready-inner-container
-    [components/wizard-step 3]
-    [react/text {:style           styles/center-title-text
-                 :number-of-lines 2
-                 :font            :bold}
-     (i18n/label :t/card-is-ready)]]
+    ;[components/wizard-step 3]
+    [react/view styles/center-container
+     [react/text {:style           styles/center-title-text
+                  :number-of-lines 2
+                  :font            :bold}
+      (i18n/label :t/card-is-paired)]
+     ;TODO(dmitryn) translate
+     [react/text {:style styles/estimated-time-text
+                  :number-of-lines 2}
+      ;{:style {:text-align :center}}
+      "Next protect ownership of the card\n creating PIN"]]]
    [react/view styles/next-button-container
     [react/view components.styles/flex]
     [components.common/bottom-button
@@ -161,7 +167,11 @@
                  :estimated-time-seconds 20
                  :step-number            1}])
 
-(defn pairing []
+(defview pairing []
+  {:component-did-mount (fn []
+                          (utils/set-timeout
+                           #(re-frame/dispatch [:hardwallet.callback/on-pairing-completed])
+                           3000))}
   [loading-view {:title-label            :t/pairing-card
                  :estimated-time-seconds 30}])
 
