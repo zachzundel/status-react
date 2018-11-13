@@ -97,14 +97,18 @@
         (unregisterTagEvent)
         (then #(log/debug "[hardwallet] unregister tag event")))))
 
-(fx/defn on-tag-discovered [cofx data]
+(fx/defn on-tag-discovered [{:keys [db] :as cofx} data]
   (let [data' (js->clj data :keywordize-keys true)
         payload (get-in data' [:ndefMessage 0 :payload])]
     (log/debug "[hardwallet] on tag discovered" data')
-    (js/alert
-     (str "tag payload: "
-          (clojure.string/join
-           (map js/String.fromCharCode payload))))))
+    (log/debug "[hardwallet] " (str "tag payload: " (clojure.string/join
+                                                     (map js/String.fromCharCode payload))))
+    (fx/merge cofx
+              {:db (assoc-in db [:hardwallet :setup-step] :begin)}
+              (navigation/navigate-to-cofx :hardwallet-setup nil))))
+
+(fx/defn on-initialization-completed [{:keys [db]}]
+  {:db (assoc-in db [:hardwallet :setup-step] :secret-keys)})
 
 (re-frame/reg-fx
  :hardwallet/check-nfc-support

@@ -135,7 +135,7 @@
   Used by 'Prepare', 'Pairing', 'Completing' screens"
   [react/view styles/loading-view-container
    [react/view styles/center-container
-    [components/wizard-step step-number]
+    #_[components/wizard-step step-number]
     [react/text {:style styles/center-title-text
                  :font  :bold}
      (i18n/label title-label)]
@@ -144,13 +144,8 @@
                    :number-of-lines 2}
        (i18n/label text-label)])
     [react/text {:style styles/estimated-time-text}
-     (str
-      (i18n/label :t/estimated-time)
-      " ~"
-      estimated-time-seconds
-      " "
-      (i18n/label-pluralize estimated-time-seconds
-                            :t/datetime-second))]]
+     ;TODO(dmitryn): move to transations
+     "This will take a few seconds"]]
    [react/view styles/waiting-indicator-container
     [react/activity-indicator {:animating true
                                :size      :large}]]])

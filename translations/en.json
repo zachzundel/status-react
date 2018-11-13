@@ -732,7 +732,7 @@
     "begin-set-up": "begin set up",
     "maintain-card-to-phone-contact": "Maintain card-to-phone contact during process.",
     "preparing-card": "Preparing card",
-    "generating-codes-for-pairing": "Generating codes for pairing with your Status account.",
+    "generating-codes-for-pairing": "> Downloading product software to card\n > Generating unlocking & pairing codes",
     "estimated-time": "Estimated time",
     "cant-read-card": "Can't read card",
     "cant-read-card-error-explanation": "Card must stay in contact with phone during setup so it can connect to the NFC reader",
