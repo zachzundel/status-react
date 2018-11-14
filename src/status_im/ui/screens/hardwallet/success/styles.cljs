@@ -22,13 +22,19 @@
    :height 160})
 
 (def icon-check-container
-  {:width            64
-   :height           64
-   :bottom           -40
-   :position         :absolute
+  {:width            160
+   :height           160
    :align-items      :center
    :justify-content  :center
-   :background-color colors/green
+   :background-color colors/green-transparent-10
+   :border-radius    100})
+
+(def icon-check-inner-container
+  {:width            80
+   :height           80
+   :align-items      :center
+   :justify-content  :center
+   :background-color colors/white
    :border-radius    50})
 
 (def complete-text-container
@@ -43,7 +49,9 @@
 (def complete-information-text
   {:text-align         :center
    :font-size          15
+   :line-height        15
    :color              colors/gray
+   :margin-bottom      21
    :padding-horizontal 80
    :padding-vertical   10})
 

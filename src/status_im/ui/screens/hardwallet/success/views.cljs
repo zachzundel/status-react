@@ -15,12 +15,11 @@
    [react/view components.styles/flex
     [react/view styles/inner-container
      [react/view styles/hardwallet-card-image-container
-      [react/image {:source (:hardwallet-card resources/ui)
-                    :style  styles/hardwallet-card-image}]
       [react/view styles/icon-check-container
-       [vector-icons/icon :icons/check {:color  :white
-                                        :width  30
-                                        :height 30}]]]
+       [react/view styles/icon-check-inner-container
+        [vector-icons/icon :icons/check {:color  colors/green
+                                         :width  30
+                                         :height 30}]]]]
      [react/view styles/complete-text-container
       [react/text {:style styles/complete-text}
        (i18n/label :t/complete-exclamation)]

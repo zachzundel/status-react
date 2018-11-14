@@ -15,7 +15,8 @@
             [status-im.ui.components.text-input.view :as text-input]
             [status-im.i18n :as i18n]
             [status-im.utils.utils :as utils]
-            [status-im.ui.components.colors :as colors]))
+            [status-im.ui.components.colors :as colors]
+            [status-im.ui.screens.hardwallet.setup.styles :as styles]))
 
 (defn secret-keys []
   [react/view styles/secret-keys-container
@@ -63,7 +64,7 @@
                   :font            :bold}
       (i18n/label :t/card-is-paired)]
      ;TODO(dmitryn) translate
-     [react/text {:style styles/estimated-time-text
+     [react/text {:style           styles/estimated-time-text
                   :number-of-lines 2}
       "Next protect ownership of the card\n creating PIN"]]]
    [react/view styles/next-button-container
@@ -75,53 +76,70 @@
 
 (defview recovery-phrase []
   (letsubs [account [:accounts/get-by-login-address]]
-    [react/view styles/card-ready-container
-     [react/view styles/card-ready-inner-container
-      [react/view styles/center-container
-       [react/text {:style           styles/center-title-text
-                    :number-of-lines 2
-                    :font            :bold}
-        (i18n/label :t/your-recovery-phrase)]
+    (let [mnemonic-vec (vec (map-indexed vector (clojure.string/split (:mnemonic account) #" ")))]
+      [react/view styles/card-ready-container
+       [react/view styles/card-ready-inner-container
+        [react/view styles/center-container
+         [react/text {:style           styles/center-title-text
+                      :number-of-lines 2
+                      :font            :bold}
+          (i18n/label :t/your-recovery-phrase)]
+         [react/view {:style {:margin-top       17
+                              :margin-bottom    16
+                              :margin-horizontal 16
+                              :flex-direction   :row
+                              :border-radius    8
+                              :background-color colors/white
+                              :border-width     1
+                              :border-color     colors/gray-lighter}}
+          [seed.views/six-words (subvec mnemonic-vec 0 6)]
+          [react/view {:style {:width            1
+                               :background-color colors/gray-lighter}}]
+          [seed.views/six-words (subvec mnemonic-vec 6 12)]]
+         ;TODO(dmitryn) translate
+         [react/view styles/recovery-phrase-description
+          [react/text {:style styles/recovery-phrase-description-text}
+           (i18n/label :t/your-recovery-phrase-description)]]]]
+       [react/view styles/next-button-container
+        [react/view components.styles/flex]
+        [components.common/bottom-button
+         {:on-press #(re-frame/dispatch [:hardwallet.ui/recovery-phrase-next-button-pressed])
+          :label    (i18n/label :t/next)
+          :forward? true}]]])))
 
-       [react/text
-        (str
-         (:mnemonic account))]
+(defview confirm-word-input [error ref]
+  {:component-will-update #(.clear @ref)}
+  [text-input/text-input-with-label
+   {:on-change-text    #(re-frame/dispatch [:hardwallet.ui/recovery-phrase-confirm-word-input-changed %])
+    :auto-focus        true
+    :ref               (partial reset! ref)
+    :on-submit-editing #(re-frame/dispatch [:hardwallet.ui/recovery-phrase-confirm-word-next-button-pressed])
+    :error             error
+    :placeholder       (i18n/label :t/enter-word)}])
 
-               ;TODO(dmitryn) translate
-       [react/view styles/recovery-phrase-description
-        [react/text {:style styles/recovery-phrase-description-text}
-         (i18n/label :t/your-recovery-phrase-description)]]]]
-     [react/view styles/next-button-container
-      [react/view components.styles/flex]
-      [components.common/bottom-button
-       {:on-press #(re-frame/dispatch [:hardwallet.ui/recovery-phrase-next-button-pressed])
-        :label    (i18n/label :t/next)
-        :forward? true}]]]))
-
-(defview recovery-phrase-confirm-word []
-  (letsubs [pair-code [:hardwallet-pair-code]
-            width [:dimensions/window-width]]
-    [react/view styles/enter-pair-code-container
-     [react/view styles/enter-pair-code-title-container
-      [react/view
-       [react/text {:style styles/enter-pair-code-title-text
-                    :font  :bold}
-        (i18n/label :t/check-your-recovery-phrase)]
-       [react/text {:style styles/enter-pair-code-explanation-text}
-        (i18n/label :t/enter-pair-code-description)]]
-      [react/view (styles/enter-pair-code-input-container width)
-       [text-input/text-input-with-label
-        {:on-change-text    #(re-frame/dispatch [:hardwallet.ui/pair-code-input-changed %])
-         :secure-text-entry true
-         :placeholder       ""}]]]
-     [react/view styles/next-button-container
-      [react/view components.styles/flex]
-      [components.common/bottom-button
-       {:on-press  #(re-frame/dispatch [:hardwallet.ui/pair-code-next-button-pressed])
-        :disabled? (empty? pair-code)
-        :forward?  true}]]]))
-
-(def recovery-phrase-confirm-word2 recovery-phrase-confirm-word)
+(defview recovery-phrase-confirm-word [step]
+  ^{:key (str step)}
+  (letsubs [width [:dimensions/window-width]
+            word [:hardwallet-recovery-phrase-word]
+            error [:hardwallet-recovery-phrase-confirm-error]
+            ref (reagent/atom nil)]
+    (let [{:keys [word idx]} word]
+      [react/view styles/enter-pair-code-container
+       [react/view styles/enter-pair-code-title-container
+        [react/view
+         [react/text {:style styles/enter-pair-code-title-text
+                      :font  :bold}
+          (i18n/label :t/check-your-recovery-phrase)]
+         [react/text {:style styles/enter-pair-code-explanation-text}
+          (i18n/label :t/word-n {:number (inc idx)})]]
+        [react/view (styles/enter-pair-code-input-container width)
+         [confirm-word-input error ref]]]
+       [react/view styles/next-button-container
+        [react/view components.styles/flex]
+        [components.common/bottom-button
+         {:on-press  #(re-frame/dispatch [:hardwallet.ui/recovery-phrase-confirm-word-next-button-pressed])
+          :disabled? (empty? word)
+          :forward?  true}]]])))
 
 (defview enter-pair-code []
   (letsubs [pair-code [:hardwallet-pair-code]
@@ -244,8 +262,8 @@
     :pairing [pairing]
     :pin [pin.views/main]
     :recovery-phrase [recovery-phrase]
-    :recovery-phrase-confirm-word [recovery-phrase-confirm-word]
-    :recovery-phrase-confirm-word2 [recovery-phrase-confirm-word2]
+    :recovery-phrase-confirm-word1 [recovery-phrase-confirm-word step]
+    :recovery-phrase-confirm-word2 [recovery-phrase-confirm-word step]
     [begin]))
 
 (defview hardwallet-setup []

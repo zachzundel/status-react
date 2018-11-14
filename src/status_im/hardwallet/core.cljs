@@ -13,7 +13,9 @@
             [status-im.utils.gfycat.core :as gfycat]
             [status-im.data-store.accounts :as accounts-store]
             [status-im.utils.hex :as utils.hex]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [status-im.i18n :as i18n]
+            [status-im.accounts.login.core :as accounts.login]))
 
 (defn check-nfc-support []
   (when config/hardwallet-enabled?
@@ -48,6 +50,11 @@
             {:hardwallet/check-nfc-enabled  nil
              :hardwallet/register-tag-event nil}
             (navigation/navigate-to-cofx :hardwallet-connect nil)))
+
+(fx/defn success-button-pressed [cofx]
+  (fx/merge cofx
+            (accounts.login/user-login cofx)
+            (navigation/navigate-to-cofx :home nil)))
 
 (defn hardwallet-supported? [db]
   (and config/hardwallet-enabled?
@@ -179,6 +186,47 @@
   (fx/merge cofx
             {:db (assoc-in db [:hardwallet :setup-step] :recovery-phrase)}
             (on-account-created result password false)))
+
+(fx/defn recovery-phrase-start-confirmation [{:keys [db]}]
+  (let [{:keys [mnemonic]}     (or (get-in db [:accounts/accounts
+                                               (get-in db [:accounts/login :address])])
+                                   (:account/account db))
+        [word1 word2] (shuffle (map-indexed vector (clojure.string/split mnemonic #" ")))
+        word1 (zipmap [:idx :word] word1)
+        word2 (zipmap [:idx :word] word2)]
+    {:db (-> db
+             (assoc-in [:hardwallet :setup-step] :recovery-phrase-confirm-word1)
+             (assoc-in [:hardwallet :recovery-phrase :step] :word1)
+             (assoc-in [:hardwallet :recovery-phrase :confirm-error] nil)
+             (assoc-in [:hardwallet :recovery-phrase :input-word] nil)
+             (assoc-in [:hardwallet :recovery-phrase :word1] word1)
+             (assoc-in [:hardwallet :recovery-phrase :word2] word2))}))
+
+(defn- show-recover-confirmation []
+  {:ui/show-confirmation {:title               (i18n/label :t/are-you-sure?)
+                          :content             (i18n/label :t/are-you-sure-description)
+                          :confirm-button-text (clojure.string/upper-case (i18n/label :t/yes))
+                          :cancel-button-text  (i18n/label :t/see-it-again)
+                          :on-accept           #(re-frame/dispatch [:hardwallet.ui/recovery-phrase-confirm-pressed])
+                          :on-cancel           #(re-frame/dispatch [:hardwallet.ui/recovery-phrase-cancel-pressed])}})
+
+(defn- recovery-phrase-next-word [db]
+  {:db (-> db
+           (assoc-in [:hardwallet :recovery-phrase :step] :word2)
+           (assoc-in [:hardwallet :recovery-phrase :confirm-error] nil)
+           (assoc-in [:hardwallet :recovery-phrase :input-word] nil)
+           (assoc-in [:hardwallet :setup-step] :recovery-phrase-confirm-word2))})
+
+(fx/defn recovery-phrase-confirm-word
+  [{:keys [db] :as cofx}]
+  (let [step (get-in db [:hardwallet :recovery-phrase :step])
+        input-word (get-in db [:hardwallet :recovery-phrase :input-word])
+        {:keys [word]} (get-in db [:hardwallet :recovery-phrase step])]
+    (if (= word input-word)
+      (if (= step :word1)
+        (recovery-phrase-next-word db)
+        (show-recover-confirmation))
+      {:db (assoc-in db [:hardwallet :recovery-phrase :confirm-error] (i18n/label :t/wrong-word))})))
 
 (re-frame/reg-fx
  :hardwallet/check-nfc-support

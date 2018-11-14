@@ -833,13 +833,28 @@
 
 (handlers/register-handler-fx
  :hardwallet.ui/recovery-phrase-next-button-pressed
- (fn [{:keys [db]} _]
-   {:db (assoc-in db [:hardwallet :setup-step] :recovery-phrase-confirm-word)}))
+ (fn [cofx _]
+   (hardwallet/recovery-phrase-start-confirmation cofx)))
 
 (handlers/register-handler-fx
  :hardwallet.ui/recovery-phrase-confirm-word-next-button-pressed
+ (fn [cofx _]
+   (hardwallet/recovery-phrase-confirm-word cofx)))
+
+(handlers/register-handler-fx
+ :hardwallet.ui/recovery-phrase-confirm-word-input-changed
+ (fn [{:keys [db]} [_ input]]
+   {:db (assoc-in db [:hardwallet :recovery-phrase :input-word] input)}))
+
+(handlers/register-handler-fx
+ :hardwallet.ui/recovery-phrase-confirm-pressed
+ (fn [cofx _]
+   (navigation/navigate-to-cofx cofx :hardwallet-success nil)))
+
+(handlers/register-handler-fx
+ :hardwallet.ui/recovery-phrase-cancel-pressed
  (fn [{:keys [db]} _]
-   {:db (assoc-in db [:hardwallet :setup-step] :recovery-phrase-confirm-word2)}))
+   {:db (assoc-in db [:hardwallet :setup-step] :recovery-phrase)}))
 
 (handlers/register-handler-fx
  :hardwallet/connection-error
@@ -873,7 +888,7 @@
 (handlers/register-handler-fx
  :hardwallet.ui/success-button-pressed
  (fn [cofx _]
-   (navigation/navigate-to-cofx cofx :home nil)))
+   (hardwallet/success-button-pressed cofx)))
 
 (handlers/register-handler-fx
  :hardwallet.ui/pin-numpad-button-pressed
