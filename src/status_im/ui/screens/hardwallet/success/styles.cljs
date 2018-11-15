@@ -17,10 +17,6 @@
    :align-items     :center
    :justify-content :center})
 
-(def hardwallet-card-image
-  {:width  255
-   :height 160})
-
 (def icon-check-container
   {:width            160
    :height           160
@@ -38,7 +34,9 @@
    :border-radius    50})
 
 (def complete-text-container
-  {:margin-top 40})
+  {:margin-top     80
+   :flex-direction :column
+   :align-items    :center})
 
 (def complete-text
   {:font-size   22
@@ -49,11 +47,11 @@
 (def complete-information-text
   {:text-align         :center
    :font-size          15
-   :line-height        15
+   :line-height        22
    :color              colors/gray
    :margin-bottom      21
    :padding-horizontal 80
-   :padding-vertical   10})
+   :padding-top        20})
 
 (def bottom-action-container
   {:background-color colors/gray-background
@@ -70,3 +68,7 @@
    :color          colors/blue
    :line-height    20
    :text-transform :uppercase})
+
+(def waiting-indicator-container
+  {:height        20
+   :margin-bottom 40})

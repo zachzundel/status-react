@@ -53,8 +53,7 @@
 
 (fx/defn success-button-pressed [cofx]
   (fx/merge cofx
-            (accounts.login/user-login cofx)
-            (navigation/navigate-to-cofx :home nil)))
+            (accounts.login/user-login cofx)))
 
 (defn hardwallet-supported? [db]
   (and config/hardwallet-enabled?

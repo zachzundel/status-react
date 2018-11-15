@@ -107,7 +107,7 @@
           :label    (i18n/label :t/next)
           :forward? true}]]])))
 
-(defview confirm-word-input [error ref]
+(defview confirm-word-input [error ref step]
   {:component-will-update #(.clear @ref)}
   [text-input/text-input-with-label
    {:on-change-text    #(re-frame/dispatch [:hardwallet.ui/recovery-phrase-confirm-word-input-changed %])
@@ -133,7 +133,7 @@
          [react/text {:style styles/enter-pair-code-explanation-text}
           (i18n/label :t/word-n {:number (inc idx)})]]
         [react/view (styles/enter-pair-code-input-container width)
-         [confirm-word-input error ref]]]
+         [confirm-word-input error ref step]]]
        [react/view styles/next-button-container
         [react/view components.styles/flex]
         [components.common/bottom-button
