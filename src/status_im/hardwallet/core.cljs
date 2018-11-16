@@ -102,7 +102,7 @@
 
 (defn- start-module []
   (when config/hardwallet-enabled?
-    (.scStart status #(log/debug "[hardwallet] module started"))))
+    (.scStart status)))
 
 (defn- register-tag-event []
   (when config/hardwallet-enabled?
