@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.io.FileOutputStream;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -32,6 +34,8 @@ import org.json.JSONObject;
 import org.json.JSONException;
 
 import javax.annotation.Nullable;
+
+import im.status.hardwallet_lite_android.io.APDUException;
 
 class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventListener, ConnectorHandler {
 
@@ -799,6 +803,13 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
 
   @ReactMethod
   public void scInit() {
-      //
+      try {
+          SmartCardSecrets s = smartCard.init();
+          Log.d("installer-debug", s.getPin());
+          Log.d("installer-debug", s.getPuk());
+          Log.d("installer-debug", s.getPairingPassword());
+      } catch (IOException | APDUException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+          Log.d("installer-debug", e.getMessage());
+      }
   }
 }

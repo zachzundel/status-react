@@ -12,10 +12,15 @@ import android.util.Log;
 import com.facebook.react.bridge.*;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+
+import im.status.hardwallet_lite_android.io.APDUException;
 import im.status.hardwallet_lite_android.io.CardChannel;
 import im.status.hardwallet_lite_android.io.CardListener;
 import im.status.hardwallet_lite_android.io.CardManager;
-
+import im.status.hardwallet_lite_android.wallet.WalletAppletCommandSet;
 
 public class SmartCard extends BroadcastReceiver implements CardListener {
     private CardManager cardManager;
@@ -23,6 +28,7 @@ public class SmartCard extends BroadcastReceiver implements CardListener {
     private Activity activity;
     private ReactContext reactContext;
     private NfcAdapter nfcAdapter;
+    private CardChannel cardChannel;
 
     public SmartCard(Activity activity, ReactContext reactContext) {
         this.cardManager = new CardManager();
@@ -53,6 +59,7 @@ public class SmartCard extends BroadcastReceiver implements CardListener {
 
     @Override
     public void onConnected(final CardChannel channel) {
+        this.cardChannel = cardChannel;
         sendEvent(reactContext, "scOnConnected", null);
     }
 
@@ -91,4 +98,13 @@ public class SmartCard extends BroadcastReceiver implements CardListener {
                 .emit(eventName, params);
     }
 
+    public SmartCardSecrets init() throws IOException, APDUException, NoSuchAlgorithmException, InvalidKeySpecException {
+        WalletAppletCommandSet cmdSet = new WalletAppletCommandSet(this.cardChannel);
+        cmdSet.select().checkOK();
+
+        SmartCardSecrets s = SmartCardSecrets.generate();
+        cmdSet.init(s.getPin(), s.getPuk(), s.getPairingPassword()).checkOK();
+
+        return s;
+    }
 }
