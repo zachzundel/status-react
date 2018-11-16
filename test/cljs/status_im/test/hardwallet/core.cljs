@@ -24,10 +24,11 @@
                                          6
                                          :original))))
   (testing "confirmation entered"
-    (is (= {:db {:hardwallet {:pin {:original     [1 2 3 4 5 6]
-                                    :confirmation [1 2 3 4 5 6]
-                                    :enter-step   :confirmation
-                                    :status       :validating}}}}
+    (is (= {:db                   {:hardwallet {:pin {:original     [1 2 3 4 5 6]
+                                                      :confirmation [1 2 3 4 5 6]
+                                                      :enter-step   :confirmation
+                                                      :status       :validating}}}
+            :utils/dispatch-later [{:ms 3000, :dispatch [:hardwallet.callback/on-pin-validated]}]}
            (hardwallet/process-pin-input {:db {:hardwallet {:pin {:original     [1 2 3 4 5 6]
                                                                   :confirmation [1 2 3 4 5]
                                                                   :enter-step   :confirmation}}}}
