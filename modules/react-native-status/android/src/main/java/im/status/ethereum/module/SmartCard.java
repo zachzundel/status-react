@@ -24,7 +24,6 @@ import im.status.hardwallet_lite_android.wallet.WalletAppletCommandSet;
 
 public class SmartCard extends BroadcastReceiver implements CardListener {
     private CardManager cardManager;
-    private Callback onCardConnected;
     private Activity activity;
     private ReactContext reactContext;
     private NfcAdapter nfcAdapter;
