@@ -800,7 +800,8 @@
 (handlers/register-handler-fx
  :hardwallet.ui/begin-setup-button-pressed
  (fn [{:keys [db]} _]
-   {:db (assoc-in db [:hardwallet :setup-step] :preparing)}))
+   {:hardwallet/initialize-card nil
+    :db                         (assoc-in db [:hardwallet :setup-step] :preparing)}))
 
 (handlers/register-handler-fx
  :hardwallet.ui/pair-card-button-pressed

@@ -797,4 +797,8 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
       smartCard.start();
   }
 
+  @ReactMethod
+  public void scInit() {
+      //
+  }
 }

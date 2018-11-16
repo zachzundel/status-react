@@ -104,6 +104,10 @@
   (when config/hardwallet-enabled?
     (.scStart status)))
 
+(defn- initialize-card []
+  (when config/hardwallet-enabled?
+    (.scInit status)))
+
 (defn- register-tag-event []
   (when config/hardwallet-enabled?
     (.addListener event-emitter
@@ -243,6 +247,10 @@
 (re-frame/reg-fx
  :hardwallet/start-module
  start-module)
+
+(re-frame/reg-fx
+ :hardwallet/initialize-card
+ initialize-card)
 
 (re-frame/reg-fx
  :hardwallet/register-tag-event
