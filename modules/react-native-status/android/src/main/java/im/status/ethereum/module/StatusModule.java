@@ -803,6 +803,7 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
 
   @ReactMethod
   public void scOnConnected(final Callback callback) {
+      smartCard.start();
       smartCard.setOnCardConnectedHandler(callback);
   }
 
