@@ -18,6 +18,8 @@ android {
 
 dependencies {
     implementation 'com.facebook.react:react-native:+'
+    //implementation 'com.github.status-im:hardwallet-lite-android:29bf055'
+    implementation 'com.github.status-im:hardwallet-lite-android:f646e5d'
     compile 'com.github.status-im:function:0.0.1'
 
     // WARNING: If you change this, make sure the GitHub release of the .aar exists.

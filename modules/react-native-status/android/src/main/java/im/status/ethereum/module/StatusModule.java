@@ -47,6 +47,7 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
     private boolean debug;
     private boolean devCluster;
     private ReactApplicationContext reactContext;
+    private SmartCard smartCard;
 
     StatusModule(ReactApplicationContext reactContext, boolean debug, boolean devCluster) {
         super(reactContext);
@@ -56,6 +57,7 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
         this.debug = debug;
         this.devCluster = devCluster;
         this.reactContext = reactContext;
+        this.smartCard = new SmartCard(getCurrentActivity());
         reactContext.addLifecycleEventListener(this);
     }
 
@@ -773,5 +775,26 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
 
     constants.put("is24Hour", this.is24Hour());
     return constants;
+  }
+
+  /* SMARTCARD METHODS */
+  @ReactMethod
+  public void scNfcIsSupported(final Callback callback) {
+      Log.d(TAG, "scNfcIsSupported");
+      if (!checkAvailability()) {
+          callback.invoke(false);
+          return;
+      }
+
+      Runnable r = new Runnable() {
+          @Override
+          public void run() {
+              boolean result = smartCard.isNfcSupported();
+
+              callback.invoke(result);
+          }
+      };
+
+      StatusThreadPoolExecutor.getInstance().execute(r);
   }
 }
