@@ -54,7 +54,7 @@ public class SmartCard extends BroadcastReceiver implements CardListener {
         this.onCardConnectedCallback = callback;
     }
 
-    public void setOnCardDisconnectedCallback(Callback callback) {
+    public void setOnCardDisconnectedHandler(Callback callback) {
         this.onCardDisconnectedCallback = callback;
     }
 
