@@ -793,7 +793,7 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
   }
 
   @ReactMethod
-  public void scStart(final Callback callback) {
+  public void scStart() {
       smartCard.start();
   }
 
