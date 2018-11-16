@@ -800,4 +800,14 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
 
       StatusThreadPoolExecutor.getInstance().execute(r);
   }
+
+  @ReactMethod
+  public void scOnConnected(final Callback callback) {
+      smartCard.setOnCardConnectedHandler(callback);
+  }
+
+  @ReactMethod
+  public void scOnDisconnected(final Callback callback) {
+      smartCard.setOnCardConnectedHandler(callback);
+  }
 }
