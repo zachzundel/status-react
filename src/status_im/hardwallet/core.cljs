@@ -128,6 +128,10 @@
               {:db (assoc-in db [:hardwallet :setup-step] :begin)}
               (navigation/navigate-to-cofx :hardwallet-setup nil))))
 
+(fx/defn start-initialization [{:keys [db]}]
+  {:hardwallet/initialize-card nil
+   :db                         (assoc-in db [:hardwallet :setup-step] :preparing)})
+
 (fx/defn on-initialization-completed [{:keys [db]}]
   {:db (assoc-in db [:hardwallet :setup-step] :secret-keys)})
 

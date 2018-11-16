@@ -799,9 +799,8 @@
 
 (handlers/register-handler-fx
  :hardwallet.ui/begin-setup-button-pressed
- (fn [{:keys [db]} _]
-   {:hardwallet/initialize-card nil
-    :db                         (assoc-in db [:hardwallet :setup-step] :preparing)}))
+ (fn [cofx _]
+   (hardwallet/start-initialization cofx)))
 
 (handlers/register-handler-fx
  :hardwallet.ui/pair-card-button-pressed
