@@ -771,11 +771,6 @@
    (hardwallet/on-create-account-success cofx result password)))
 
 (handlers/register-handler-fx
- :hardwallet/unregister-tag-event
- (fn [_ _]
-   {:hardwallet/unregister-tag-event nil}))
-
-(handlers/register-handler-fx
  :hardwallet.ui/status-hardwallet-option-pressed
  (fn [cofx _]
    (hardwallet/navigate-to-connect-screen cofx)))

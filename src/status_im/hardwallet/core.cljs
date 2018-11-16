@@ -17,19 +17,20 @@
             [status-im.i18n :as i18n]
             [status-im.accounts.login.core :as accounts.login]))
 
+(def status (.-Status (.-NativeModules js-dependencies/react-native)))
+(def event-emitter (.-DeviceEventEmitter js-dependencies/react-native))
+
 (defn check-nfc-support []
   (when config/hardwallet-enabled?
-    (.. js-dependencies/nfc-manager
-        -default
-        isSupported
-        (then #(re-frame/dispatch [:hardwallet.callback/check-nfc-support-success %])))))
+    (.scNfcIsSupported
+     status
+     #(re-frame/dispatch [:hardwallet.callback/check-nfc-support-success %]))))
 
 (defn check-nfc-enabled []
   (when platform/android?
-    (.. js-dependencies/nfc-manager
-        -default
-        isEnabled
-        (then #(re-frame/dispatch [:hardwallet.callback/check-nfc-enabled-success %])))))
+    (.scNfcIsEnabled
+     status
+     #(re-frame/dispatch [:hardwallet.callback/check-nfc-enabled-success %]))))
 
 (fx/defn set-nfc-support
   [{:keys [db]} supported?]
@@ -99,19 +100,19 @@
                  (get-in db' [:hardwallet :pin :confirmation])))
       (pin-mismatch))))
 
+(defn- start-module []
+  (when config/hardwallet-enabled?
+    (.scStart status #(log/debug "[hardwallet] module started"))))
+
 (defn- register-tag-event []
   (when config/hardwallet-enabled?
-    (.. js-dependencies/nfc-manager
-        -default
-        (registerTagEvent #(re-frame/dispatch [:hardwallet.callback/on-tag-discovered %]))
-        (then #(log/debug "[hardwallet] register tag event")))))
+    (.addListener event-emitter
+                  "scOnConnected"
+                  #(re-frame/dispatch [:hardwallet.callback/on-tag-discovered %]))
 
-(defn- unregister-tag-event []
-  (when config/hardwallet-enabled?
-    (.. js-dependencies/nfc-manager
-        -default
-        (unregisterTagEvent)
-        (then #(log/debug "[hardwallet] unregister tag event")))))
+    (.addListener event-emitter
+                  "scOnDisconnected"
+                  #(log/debug "[hardwallet] card disconnected"))))
 
 (fx/defn on-tag-discovered [{:keys [db] :as cofx} data]
   (let [data' (js->clj data :keywordize-keys true)
@@ -240,12 +241,12 @@
  open-nfc-settings)
 
 (re-frame/reg-fx
- :hardwallet/register-tag-event
- register-tag-event)
+ :hardwallet/start-module
+ start-module)
 
 (re-frame/reg-fx
- :hardwallet/unregister-tag-event
- unregister-tag-event)
+ :hardwallet/register-tag-event
+ register-tag-event)
 
 (re-frame/reg-fx
  :hardwallet/create-account

@@ -7,8 +7,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.nfc.NfcAdapter;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import com.facebook.react.bridge.*;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import im.status.hardwallet_lite_android.io.CardChannel;
 import im.status.hardwallet_lite_android.io.CardListener;
@@ -19,15 +21,14 @@ public class SmartCard extends BroadcastReceiver implements CardListener {
     private CardManager cardManager;
     private Callback onCardConnected;
     private Activity activity;
+    private ReactContext reactContext;
     private NfcAdapter nfcAdapter;
 
-    private Callback onCardConnectedCallback;
-    private Callback onCardDisconnectedCallback;
-
-    public SmartCard(Activity activity) {
+    public SmartCard(Activity activity, ReactContext reactContext) {
         this.cardManager = new CardManager();
         this.cardManager.setCardListener(this);
         this.activity = activity;
+        this.reactContext = reactContext;
         this.nfcAdapter = NfcAdapter.getDefaultAdapter(activity.getBaseContext());
     }
 
@@ -50,26 +51,14 @@ public class SmartCard extends BroadcastReceiver implements CardListener {
         }
     }
 
-    public void setOnCardConnectedHandler(Callback callback) {
-        this.onCardConnectedCallback = callback;
-    }
-
-    public void setOnCardDisconnectedHandler(Callback callback) {
-        this.onCardDisconnectedCallback = callback;
-    }
-
     @Override
     public void onConnected(final CardChannel channel) {
-        if (this.onCardConnectedCallback != null) {
-            this.onCardConnectedCallback.invoke();
-        }
+        sendEvent(reactContext, "scOnConnected", null);
     }
 
     @Override
     public void onDisconnected() {
-        if (this.onCardDisconnectedCallback != null) {
-            this.onCardDisconnectedCallback.invoke();
-        }
+        sendEvent(reactContext, "scOnDisconnected", null);
     }
 
     @Override
@@ -89,4 +78,17 @@ public class SmartCard extends BroadcastReceiver implements CardListener {
     public boolean isNfcSupported() {
         return activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_NFC);
     }
+
+    public boolean isNfcEnabled() {
+        return nfcAdapter.isEnabled();
+    }
+
+    private void sendEvent(ReactContext reactContext,
+                           String eventName,
+                           @Nullable WritableMap params) {
+        reactContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit(eventName, params);
+    }
+
 }

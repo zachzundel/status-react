@@ -80,7 +80,7 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
         }
 
         if (smartCard == null) {
-            smartCard = new SmartCard(getCurrentActivity());
+            smartCard = new SmartCard(getCurrentActivity(), reactContext);
         }
 
         status.bindService();
@@ -781,34 +781,20 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
   }
 
   /* SMARTCARD METHODS */
+
   @ReactMethod
   public void scNfcIsSupported(final Callback callback) {
-      Log.d(TAG, "scNfcIsSupported");
-      if (!checkAvailability()) {
-          callback.invoke(false);
-          return;
-      }
-
-      Runnable r = new Runnable() {
-          @Override
-          public void run() {
-              boolean result = smartCard.isNfcSupported();
-
-              callback.invoke(result);
-          }
-      };
-
-      StatusThreadPoolExecutor.getInstance().execute(r);
+      callback.invoke(smartCard.isNfcSupported());
   }
 
   @ReactMethod
-  public void scOnConnected(final Callback callback) {
+  public void scNfcIsEnabled(final Callback callback) {
+      callback.invoke(smartCard.isNfcEnabled());
+  }
+
+  @ReactMethod
+  public void scStart(final Callback callback) {
       smartCard.start();
-      smartCard.setOnCardConnectedHandler(callback);
   }
 
-  @ReactMethod
-  public void scOnDisconnected(final Callback callback) {
-      smartCard.setOnCardDisconnectedHandler(callback);
-  }
 }
