@@ -57,7 +57,6 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
         this.debug = debug;
         this.devCluster = devCluster;
         this.reactContext = reactContext;
-        this.smartCard = new SmartCard(getCurrentActivity());
         reactContext.addLifecycleEventListener(this);
     }
 
@@ -78,6 +77,10 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
         if (status == null) {
             status = new ServiceConnector(currentActivity, StatusService.class);
             status.registerHandler(this);
+        }
+
+        if (smartCard == null) {
+            smartCard = new SmartCard(getCurrentActivity());
         }
 
         status.bindService();
