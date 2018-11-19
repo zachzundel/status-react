@@ -748,9 +748,14 @@
    (hardwallet/on-tag-discovered cofx data)))
 
 (handlers/register-handler-fx
- :hardwallet.callback/on-initialization-completed
+ :hardwallet.callback/on-initialization-success
  (fn [cofx [_ secrets]]
-   (hardwallet/on-initialization-completed cofx secrets)))
+   (hardwallet/on-initialization-success cofx secrets)))
+
+(handlers/register-handler-fx
+ :hardwallet.callback/on-initialization-error
+ (fn [cofx [_ error]]
+   (hardwallet/on-initialization-error cofx error)))
 
 (handlers/register-handler-fx
  :hardwallet.callback/on-pairing-completed
@@ -902,6 +907,11 @@
    {:db (-> db
             (assoc-in [:hardwallet :setup-step] :pin)
             (assoc-in [:hardwallet :pin :enter-step] :original))}))
+
+(handlers/register-handler-fx
+ :hardwallet.ui/error-button-pressed
+ (fn [{:keys [db]} _]
+   {:db (assoc-in db [:hardwallet :setup-step] :begin)}))
 
 ;; browser module
 

@@ -106,7 +106,9 @@
 
 (defn- initialize-card []
   (when config/hardwallet-enabled?
-    (.scInit status #(re-frame/dispatch [:hardwallet.callback/on-initialization-completed %]))))
+    (.scInit status
+             #(re-frame/dispatch [:hardwallet.callback/on-initialization-success %])
+             #(re-frame/dispatch [:hardwallet.callback/on-initialization-error %]))))
 
 (defn- register-tag-event []
   (when config/hardwallet-enabled?
@@ -132,11 +134,19 @@
   {:hardwallet/initialize-card nil
    :db                         (assoc-in db [:hardwallet :setup-step] :preparing)})
 
-(fx/defn on-initialization-completed [{:keys [db]} secrets]
+(fx/defn on-initialization-success
+  [{:keys [db]} secrets]
   (let [secrets' (js->clj secrets :keywordize-keys true)]
     {:db (-> db
              (assoc-in [:hardwallet :setup-step] :secret-keys)
              (assoc-in [:hardwallet :secrets] secrets'))}))
+
+(fx/defn on-initialization-error
+  [{:keys [db]} error]
+  (log/debug "[hardwallet] initialization error: " error)
+  {:db (-> db
+           (assoc-in [:hardwallet :setup-step] :error)
+           (assoc-in [:hardwallet :setup-error] error))})
 
 (fx/defn on-pairing-completed [{:keys [db]}]
   {:db (assoc-in db [:hardwallet :setup-step] :card-ready)})

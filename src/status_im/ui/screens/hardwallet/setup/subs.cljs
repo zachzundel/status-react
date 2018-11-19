@@ -32,3 +32,8 @@
  :hardwallet-secrets
  (fn [db]
    (get-in db [:hardwallet :secrets])))
+
+(re-frame/reg-sub
+ :hardwallet-setup-error
+ (fn [db]
+   (get-in db [:hardwallet :setup-error])))

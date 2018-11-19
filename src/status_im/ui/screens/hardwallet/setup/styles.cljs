@@ -106,6 +106,16 @@
    :width            160
    :height           44
    :border-radius    10
+   :margin-bottom    14})
+
+(def begin-button-container
+  {:background-color colors/gray-background
+   :align-items      :center
+   :justify-content  :center
+   :flex-direction   :row
+   :width            160
+   :height           44
+   :border-radius    10
    :margin-bottom    1})
 
 (def bottom-button-text
@@ -239,10 +249,10 @@
    :margin-bottom 20})
 
 (def card-is-empty-prepare-text
-  {:margin-top 7})
+  {:margin-top 10})
 
 (def remaining-steps-container
-  {:margin-top     46
+  {:margin-top     42
    :margin-left    16
    :flex           1
    :width          "90%"

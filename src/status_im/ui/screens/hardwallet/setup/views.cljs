@@ -197,7 +197,7 @@
    [react/view styles/remaining-steps-container
     [react/text {:style styles/remaining-steps-text}
      "Remaining steps"]
-    [react/view
+    [react/view {:margin-top 4}
      (for [[number text] [["1" "Initialization of the card"]
                           ["2" "PUK and pairing codes displayed"]
                           ["3" "Device pairing"]
@@ -213,7 +213,7 @@
    [react/view styles/bottom-container
     [react/touchable-highlight
      {:on-press #(re-frame/dispatch [:hardwallet.ui/begin-setup-button-pressed])}
-     [react/view styles/bottom-button-container
+     [react/view styles/begin-button-container
       [react/text {:style      styles/bottom-button-text
                    :font       :medium
                    :uppercase? true}
@@ -235,6 +235,25 @@
                           :button-label           :t/help
                           :button-container-style {:background-color colors/white}
                           :on-press-event         :hardwallet.ui/card-already-linked-help-button-pressed}])
+
+(defview error []
+  (letsubs [error [:hardwallet-setup-error]]
+    [react/view styles/card-with-button-view-container
+     [react/view styles/hardwallet-card-image-container
+      [react/image {:source (:hardwallet-card resources/ui)
+                    :style  styles/hardwallet-card-image}]
+      [react/view styles/center-text-container
+       [react/text {:style styles/center-text}
+        "Something went wrong\n"]
+       [react/text {:style styles/center-text}
+        error]]]
+     [react/touchable-highlight
+      {:on-press #(re-frame/dispatch [:hardwallet.ui/error-button-pressed])}
+      [react/view styles/bottom-button-container
+       [react/text {:style      styles/bottom-button-text
+                    :font       :medium
+                    :uppercase? true}
+        (i18n/label :t/okay)]]]]))
 
 (defn- loading-view [{:keys [title-label text-label estimated-time-seconds step-number]}]
   "Generic view with waiting time estimate and loading indicator.
@@ -291,6 +310,7 @@
     :recovery-phrase [recovery-phrase]
     :recovery-phrase-confirm-word1 [recovery-phrase-confirm-word step]
     :recovery-phrase-confirm-word2 [recovery-phrase-confirm-word step]
+    :error [error]
     [begin]))
 
 (defview hardwallet-setup []

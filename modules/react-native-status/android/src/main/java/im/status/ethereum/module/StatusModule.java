@@ -802,7 +802,7 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
   }
 
   @ReactMethod
-  public void scInit(final Callback callback) {
+  public void scInit(final Callback successCallback, final Callback errorCallback) {
       try {
           SmartCardSecrets s = smartCard.init();
 
@@ -811,9 +811,10 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
           params.putString("puk", s.getPuk());
           params.putString("password", s.getPairingPassword());
 
-          callback.invoke(params);
+          successCallback.invoke(params);
       } catch (IOException | APDUException | NoSuchAlgorithmException | InvalidKeySpecException e) {
           Log.d("installer-debug", e.getMessage());
+          errorCallback.invoke(e.getMessage());
       }
   }
 }
