@@ -249,7 +249,8 @@
    :margin-bottom 20})
 
 (def card-is-empty-prepare-text
-  {:margin-top 10})
+  {:margin-top 10
+   :padding-horizontal 40})
 
 (def remaining-steps-container
   {:margin-top     42
