@@ -69,8 +69,8 @@
   (assoc-in fx [:db :hardwallet :pin :enter-step] :confirmation))
 
 (defn- pin-match [{:keys [db]}]
-  {:db (assoc-in db [:hardwallet :pin :status] :validating)
-   :utils/dispatch-later [{:ms 3000
+  {:db                   (assoc-in db [:hardwallet :pin :status] :validating)
+   :utils/dispatch-later [{:ms       3000
                            :dispatch [:hardwallet.callback/on-pin-validated]}]})
 
 (defn- pin-mismatch [fx]
@@ -106,7 +106,7 @@
 
 (defn- initialize-card []
   (when config/hardwallet-enabled?
-    (.scInit status)))
+    (.scInit status #(re-frame/dispatch [:hardwallet.callback/on-initialization-completed %]))))
 
 (defn- register-tag-event []
   (when config/hardwallet-enabled?
@@ -132,8 +132,11 @@
   {:hardwallet/initialize-card nil
    :db                         (assoc-in db [:hardwallet :setup-step] :preparing)})
 
-(fx/defn on-initialization-completed [{:keys [db]}]
-  {:db (assoc-in db [:hardwallet :setup-step] :secret-keys)})
+(fx/defn on-initialization-completed [{:keys [db]} secrets]
+  (let [secrets' (js->clj secrets :keywordize-keys true)]
+    {:db (-> db
+             (assoc-in [:hardwallet :setup-step] :secret-keys)
+             (assoc-in [:hardwallet :secrets] secrets'))}))
 
 (fx/defn on-pairing-completed [{:keys [db]}]
   {:db (assoc-in db [:hardwallet :setup-step] :card-ready)})
@@ -183,8 +186,8 @@
     (log/debug "account-created")
     (when-not (string/blank? pubkey)
       (fx/merge cofx
-                {:db (assoc db :accounts/login {:address normalized-address
-                                                :password password
+                {:db (assoc db :accounts/login {:address    normalized-address
+                                                :password   password
                                                 :processing true})}
                 (add-account account)))))
 
@@ -194,9 +197,9 @@
             (on-account-created result password false)))
 
 (fx/defn recovery-phrase-start-confirmation [{:keys [db]}]
-  (let [{:keys [mnemonic]}     (or (get-in db [:accounts/accounts
-                                               (get-in db [:accounts/login :address])])
-                                   (:account/account db))
+  (let [{:keys [mnemonic]} (or (get-in db [:accounts/accounts
+                                           (get-in db [:accounts/login :address])])
+                               (:account/account db))
         [word1 word2] (shuffle (map-indexed vector (clojure.string/split mnemonic #" ")))
         word1 (zipmap [:idx :word] word1)
         word2 (zipmap [:idx :word] word2)]

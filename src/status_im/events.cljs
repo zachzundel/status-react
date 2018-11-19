@@ -749,8 +749,8 @@
 
 (handlers/register-handler-fx
  :hardwallet.callback/on-initialization-completed
- (fn [cofx _]
-   (hardwallet/on-initialization-completed cofx)))
+ (fn [cofx [_ secrets]]
+   (hardwallet/on-initialization-completed cofx secrets)))
 
 (handlers/register-handler-fx
  :hardwallet.callback/on-pairing-completed

@@ -27,3 +27,8 @@
  :hardwallet-recovery-phrase-step
  (fn [db]
    (get-in db [:hardwallet :recovery-phrase :step])))
+
+(re-frame/reg-sub
+ :hardwallet-secrets
+ (fn [db]
+   (get-in db [:hardwallet :secrets])))

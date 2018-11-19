@@ -18,41 +18,42 @@
             [status-im.ui.components.colors :as colors]
             [status-im.ui.screens.hardwallet.setup.styles :as styles]))
 
-(defn secret-keys []
-  [react/view styles/secret-keys-container
-   [react/view styles/secret-keys-inner-container
-    [react/view styles/secret-keys-title-container
-     #_[components/wizard-step 2]
-     [react/text {:style           styles/secret-keys-title-text
-                  :number-of-lines 2
-                  :font            :bold}
-      (i18n/label :t/write-down-and-store-securely)]]
-    [react/text {:style styles/puk-code-title-text
-                 :font  :bold}
-     (i18n/label :t/puk-code)]
-    [react/text {:style styles/puk-code-explanation-text}
-     (i18n/label :t/puk-code-explanation)]
-    [react/view styles/puk-code-numbers-container
-     [react/view styles/puk-code-numbers-inner-container
-      [react/text {:style styles/puk-code-text
+(defview secret-keys []
+  (letsubs [secrets [:hardwallet-secrets]]
+    [react/view styles/secret-keys-container
+     [react/view styles/secret-keys-inner-container
+      [react/view styles/secret-keys-title-container
+       #_[components/wizard-step 2]
+       [react/text {:style           styles/secret-keys-title-text
+                    :number-of-lines 2
+                    :font            :bold}
+        (i18n/label :t/write-down-and-store-securely)]]
+      [react/text {:style styles/puk-code-title-text
                    :font  :bold}
-       "1234 5678 9123"]]]
-    [react/text {:style styles/puk-code-title-text
-                 :font  :bold}
-     (i18n/label :t/pair-code)]
-    [react/text {:style           styles/puk-code-explanation-text
-                 :number-of-lines 2}
-     (i18n/label :t/pair-code-explanation)]
-    [react/view styles/puk-code-numbers-container
-     [react/view styles/puk-code-numbers-inner-container
-      [react/text {:style styles/puk-code-text
+       (i18n/label :t/puk-code)]
+      [react/text {:style styles/puk-code-explanation-text}
+       (i18n/label :t/puk-code-explanation)]
+      [react/view styles/puk-code-numbers-container
+       [react/view styles/puk-code-numbers-inner-container
+        [react/text {:style styles/puk-code-text
+                     :font  :bold}
+         (:puk secrets)]]]
+      [react/text {:style styles/puk-code-title-text
                    :font  :bold}
-       "a12k52kh0x"]]]]
-   [react/view styles/next-button-container
-    [react/view components.styles/flex]
-    [components.common/bottom-button
-     {:on-press #(re-frame/dispatch [:hardwallet.ui/secret-keys-next-button-pressed])
-      :forward? true}]]])
+       (i18n/label :t/pair-code)]
+      [react/text {:style           styles/puk-code-explanation-text
+                   :number-of-lines 2}
+       (i18n/label :t/pair-code-explanation)]
+      [react/view styles/puk-code-numbers-container
+       [react/view styles/puk-code-numbers-inner-container
+        [react/text {:style styles/puk-code-text
+                     :font  :bold}
+         (:password secrets)]]]]
+     [react/view styles/next-button-container
+      [react/view components.styles/flex]
+      [components.common/bottom-button
+       {:on-press #(re-frame/dispatch [:hardwallet.ui/secret-keys-next-button-pressed])
+        :forward? true}]]]))
 
 (defn card-ready []
   [react/view styles/card-ready-container
@@ -255,11 +256,7 @@
     [react/activity-indicator {:animating true
                                :size      :large}]]])
 
-(defview preparing []
-  {:component-did-mount (fn []
-                          (utils/set-timeout
-                           #(re-frame/dispatch [:hardwallet.callback/on-initialization-completed])
-                           5000))}
+(defn preparing []
   [loading-view {:title-label            :t/preparing-card
                  :text-label             :t/generating-codes-for-pairing
                  :estimated-time-seconds 20
