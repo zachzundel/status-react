@@ -30,11 +30,16 @@
      nil]
     [common/separator]
     [react/view styles/choose-authentication-method
+     [react/view styles/lock-image-container
+      [vector-icons/icon :icons/lock {:container-style styles/lock-image
+                                      :color           colors/blue
+                                      :width           96
+                                      :height          96}]]
      [react/text {:style           styles/choose-authentication-method-text
                   :number-of-lines 3}
       (i18n/label :t/choose-authentication-method)]]
     [react/view styles/authentication-methods
-     [authentication-method-row {:title    (i18n/label :t/status-hardwallet-capitalized)
+     [authentication-method-row {:title    (i18n/label :t/keycard)
                                  :icon     :icons/hardwallet
                                  :on-press #(re-frame/dispatch [:hardwallet.ui/status-hardwallet-option-pressed])}]
      [authentication-method-row {:title    (i18n/label :t/password)
