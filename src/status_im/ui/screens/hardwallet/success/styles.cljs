@@ -71,4 +71,4 @@
 
 (def waiting-indicator-container
   {:height        20
-   :margin-bottom 40})
+   :margin-bottom 70})

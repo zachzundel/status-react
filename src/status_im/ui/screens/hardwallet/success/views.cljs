@@ -12,8 +12,11 @@
 (defn- activity-indicator [show?]
   [react/view styles/waiting-indicator-container
    (when @show?
-     [react/activity-indicator {:animating true
-                                :size      :large}])])
+     [react/view
+      [react/text {:style {:padding-bottom 20}}
+       "Signing in"]
+      [react/activity-indicator {:animating true
+                                 :size      :large}]])])
 
 (defn hardwallet-success []
   (let [processing? (reagent/atom false)]
