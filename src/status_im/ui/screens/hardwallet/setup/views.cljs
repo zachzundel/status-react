@@ -84,14 +84,14 @@
                       :number-of-lines 2
                       :font            :bold}
           (i18n/label :t/your-recovery-phrase)]
-         [react/view {:style {:margin-top       17
-                              :margin-bottom    16
+         [react/view {:style {:margin-top        17
+                              :margin-bottom     16
                               :margin-horizontal 16
-                              :flex-direction   :row
-                              :border-radius    8
-                              :background-color colors/white
-                              :border-width     1
-                              :border-color     colors/gray-lighter}}
+                              :flex-direction    :row
+                              :border-radius     8
+                              :background-color  colors/white
+                              :border-width      1
+                              :border-color      colors/gray-lighter}}
           [seed.views/six-words (subvec mnemonic-vec 0 6)]
           [react/view {:style {:width            1
                                :background-color colors/gray-lighter}}]
@@ -184,9 +184,39 @@
       (i18n/label button-label)]]]])
 
 (defn begin []
-  [card-with-button-view {:text-label     :t/card-is-empty
-                          :button-label   :t/begin-set-up
-                          :on-press-event :hardwallet.ui/begin-setup-button-pressed}])
+  [react/view styles/card-blank-container
+   [react/view styles/hardwallet-card-image-container
+    [react/text {:style styles/card-is-empty-text}
+     (i18n/label :t/card-is-blank)]
+    [react/image {:source (:hardwallet-card resources/ui)
+                  :style  styles/hardwallet-card-image}]
+    [react/view styles/card-is-empty-prepare-text
+     [react/text {:style styles/center-text}
+      (i18n/label :t/card-setup-prepare-text)]]]
+   [react/view styles/remaining-steps-container
+    [react/text {:style styles/remaining-steps-text}
+     "Remaining steps"]
+    [react/view
+     (for [[number text] [["1" "Initialization of the card"]
+                          ["2" "PUK and pairing codes displayed"]
+                          ["3" "Device pairing"]
+                          ["4" "Create PIN"]
+                          ["5" "Recovery phrase"]]]
+       ^{:key number} [react/view styles/remaining-step-row
+                       [react/view styles/remaining-step-row-text
+                        [react/text {:style {:color colors/black}}
+                         number]]
+                       [react/view styles/remaining-step-row-text2
+                        [react/text {:style {:color colors/black}}
+                         text]]])]]
+   [react/view styles/bottom-container
+    [react/touchable-highlight
+     {:on-press #(re-frame/dispatch [:hardwallet.ui/begin-setup-button-pressed])}
+     [react/view styles/bottom-button-container
+      [react/text {:style      styles/bottom-button-text
+                   :font       :medium
+                   :uppercase? true}
+       (i18n/label :t/begin-set-up)]]]]])
 
 (defn pair []
   [card-with-button-view {:text-label     :t/pair-card-question

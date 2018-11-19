@@ -49,7 +49,7 @@
   {:opacity opacity})
 
 (def hardwallet-card-image-container
-  {:margin-top  81
+  {:margin-top  24
    :flex        1
    :align-items :center})
 
@@ -67,6 +67,10 @@
   {:flex           1
    :flex-direction :column
    :align-items    :center})
+
+(def card-blank-container
+  {:flex           1
+   :flex-direction :column})
 
 (def enter-pair-code-container
   {:flex            1
@@ -87,6 +91,13 @@
    :text-align :center
    :color      colors/black})
 
+(def bottom-container
+  {:height           60
+   :justify-content  :center
+   :align-items      :center
+   :border-top-width 1
+   :border-color     colors/gray-light})
+
 (def bottom-button-container
   {:background-color colors/gray-background
    :align-items      :center
@@ -95,7 +106,7 @@
    :width            160
    :height           44
    :border-radius    10
-   :margin-bottom    40})
+   :margin-bottom    1})
 
 (def bottom-button-text
   {:font-size      14
@@ -220,4 +231,42 @@
   {:font-size   15
    :padding-top 5
    :color       colors/gray})
+
+(def card-is-empty-text
+  {:color         colors/black
+   :font-size     17
+   :font-weight   :bold
+   :margin-bottom 20})
+
+(def card-is-empty-prepare-text
+  {:margin-top 7})
+
+(def remaining-steps-container
+  {:margin-top     46
+   :margin-left    16
+   :flex           1
+   :width          "90%"
+   :flex-direction :column})
+
+(def remaining-steps-text
+  {:color     colors/gray
+   :font-size 15})
+
+(def remaining-step-row
+  {:flex-direction :row
+   :margin-top     7})
+
+(def remaining-step-row-text
+  {:border-width    1
+   :border-radius   16
+   :border-color    colors/gray-light
+   :align-items     :center
+   :justify-content :center
+   :width           32
+   :height          32})
+
+(def remaining-step-row-text2
+  {:align-items     :center
+   :justify-content :center
+   :margin-left     11})
 
