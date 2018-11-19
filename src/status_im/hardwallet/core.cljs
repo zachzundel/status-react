@@ -147,9 +147,7 @@
   (let [pin (get-in db [:hardwallet :pin :original])
         password (apply str pin)]
     (fx/merge cofx
-              {:db (-> db
-                       (assoc-in [:hardwallet :setup-step] :recovery-phrase))
-               :hardwallet/create-account password})))
+              {:hardwallet/create-account password})))
 
 (fx/defn add-account
   "Takes db and new account, creates map of effects describing adding account to database and realm"
