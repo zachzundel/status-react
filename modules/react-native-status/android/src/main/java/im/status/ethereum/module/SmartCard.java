@@ -86,7 +86,11 @@ public class SmartCard extends BroadcastReceiver implements CardListener {
     }
 
     public boolean isNfcEnabled() {
-        return nfcAdapter.isEnabled();
+        if (nfcAdapter != null) {
+            return nfcAdapter.isEnabled();
+        } else {
+            return false;
+        }
     }
 
     private void sendEvent(ReactContext reactContext,
