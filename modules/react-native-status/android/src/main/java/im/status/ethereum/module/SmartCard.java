@@ -58,7 +58,7 @@ public class SmartCard extends BroadcastReceiver implements CardListener {
 
     @Override
     public void onConnected(final CardChannel channel) {
-        this.cardChannel = cardChannel;
+        this.cardChannel = channel;
         sendEvent(reactContext, "scOnConnected", null);
     }
 
