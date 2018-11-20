@@ -169,7 +169,7 @@
   {:flex            1
    :flex-direction  :column
    :justify-content :space-between
-   :margin-top      40})
+   :margin-top      30})
 
 (def secret-keys-inner-container
   {:flex-direction :column
@@ -185,7 +185,7 @@
 
 (def puk-code-title-text
   {:font-size   17
-   :padding-top 32
+   :padding-top 12
    :color       colors/black})
 
 (def puk-code-explanation-text
@@ -203,7 +203,7 @@
   {:width           "85%"
    :android         {:margin-horizontal 16}
    :height          64
-   :margin-top      20
+   :margin-top      10
    :align-items     :center
    :justify-content :center
    :border-width    1

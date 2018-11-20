@@ -817,4 +817,17 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
           errorCallback.invoke(e.getMessage());
       }
   }
+
+  @ReactMethod
+  public void scPair(final String pairingPassword, final Callback successCallback, final Callback errorCallback) {
+       try {
+           smartCard.pair(pairingPassword);
+           Log.d("scPair", "pairing done");
+
+           successCallback.invoke();
+       } catch (IOException e) {
+           Log.d("scPair error", e.getMessage());
+           errorCallback.invoke(e.getMessage());
+       }
+   }
 }

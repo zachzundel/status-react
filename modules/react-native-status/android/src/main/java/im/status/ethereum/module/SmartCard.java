@@ -110,4 +110,9 @@ public class SmartCard extends BroadcastReceiver implements CardListener {
 
         return s;
     }
+
+    public void pair(String pairingPassword) throws IOException {
+        WalletAppletCommandSet cmdSet = new WalletAppletCommandSet(this.cardChannel);
+        cmdSet.autoPair(pairingPassword);
+    }
 }

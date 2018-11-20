@@ -56,6 +56,10 @@
   (fx/merge cofx
             (accounts.login/user-login cofx)))
 
+(fx/defn start-pairing [{:keys [db] :as cofx}]
+  {:db              (assoc-in db [:hardwallet :setup-step] :pairing)
+   :hardwallet/pair cofx})
+
 (defn hardwallet-supported? [db]
   (and config/hardwallet-enabled?
        platform/android?
@@ -120,6 +124,15 @@
                   "scOnDisconnected"
                   #(log/debug "[hardwallet] card disconnected"))))
 
+(defn- pair [cofx]
+  (let [pairing-password (get-in cofx [:db :hardwallet :secrets :password])]
+    (prn "pair pass" pairing-password)
+    (when pairing-password
+      (.scPair status
+               pairing-password
+               #(re-frame/dispatch [:hardwallet.callback/on-pairing-success %])
+               #(re-frame/dispatch [:hardwallet.callback/on-pairing-error %])))))
+
 (fx/defn on-tag-discovered [{:keys [db] :as cofx} data]
   (let [data' (js->clj data :keywordize-keys true)
         payload (get-in data' [:ndefMessage 0 :payload])]
@@ -148,8 +161,20 @@
            (assoc-in [:hardwallet :setup-step] :error)
            (assoc-in [:hardwallet :setup-error] error))})
 
-(fx/defn on-pairing-completed [{:keys [db]}]
-  {:db (assoc-in db [:hardwallet :setup-step] :card-ready)})
+(fx/defn on-pairing-success
+  [{:keys [db]} pairing-data]
+  (let [data (js->clj pairing-data :keywordize-keys true)]
+    (log/debug "[hardwallet] pairing data: " data)
+    {:db (-> db
+             (assoc-in [:hardwallet :setup-step] :card-ready)
+             (assoc-in [:hardwallet :pairing] data))}))
+
+(fx/defn on-pairing-error
+  [{:keys [db]} error]
+  (log/debug "[hardwallet] pairing error: " error)
+  {:db (-> db
+           (assoc-in [:hardwallet :setup-step] :error)
+           (assoc-in [:hardwallet :setup-error] error))})
 
 (defn create-account [password]
   (status/create-account
@@ -274,3 +299,7 @@
 (re-frame/reg-fx
  :hardwallet/create-account
  create-account)
+
+(re-frame/reg-fx
+ :hardwallet/pair
+ pair)

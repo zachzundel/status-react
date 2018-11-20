@@ -30,6 +30,16 @@
         (i18n/label :t/write-down-and-store-securely)]]
       [react/text {:style styles/puk-code-title-text
                    :font  :bold}
+       (i18n/label :t/pin-code)]
+      [react/text {:style styles/puk-code-explanation-text}
+       "Unlocks the card"]
+      [react/view styles/puk-code-numbers-container
+       [react/view styles/puk-code-numbers-inner-container
+        [react/text {:style styles/puk-code-text
+                     :font  :bold}
+         (:pin secrets)]]]
+      [react/text {:style styles/puk-code-title-text
+                   :font  :bold}
        (i18n/label :t/puk-code)]
       [react/text {:style styles/puk-code-explanation-text}
        (i18n/label :t/puk-code-explanation)]
@@ -281,11 +291,7 @@
                  :estimated-time-seconds 20
                  :step-number            1}])
 
-(defview pairing []
-  {:component-did-mount (fn []
-                          (utils/set-timeout
-                           #(re-frame/dispatch [:hardwallet.callback/on-pairing-completed])
-                           5000))}
+(defn pairing []
   [loading-view {:title-label            :t/pairing-card
                  :estimated-time-seconds 30}])
 

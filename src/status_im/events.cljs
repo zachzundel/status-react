@@ -758,9 +758,14 @@
    (hardwallet/on-initialization-error cofx error)))
 
 (handlers/register-handler-fx
- :hardwallet.callback/on-pairing-completed
- (fn [cofx _]
-   (hardwallet/on-pairing-completed cofx)))
+ :hardwallet.callback/on-pairing-success
+ (fn [cofx [_ pairing-data]]
+   (hardwallet/on-pairing-success cofx #js {})))
+
+(handlers/register-handler-fx
+ :hardwallet.callback/on-pairing-error
+ (fn [cofx [_ error]]
+   (hardwallet/on-pairing-error cofx error)))
 
 (handlers/register-handler-fx
  :hardwallet.callback/on-pin-validated
@@ -882,8 +887,8 @@
 
 (handlers/register-handler-fx
  :hardwallet.ui/secret-keys-dialog-confirm-pressed
- (fn [{:keys [db]} _]
-   {:db (assoc-in db [:hardwallet :setup-step] :pairing)}))
+ (fn [cofx _]
+   (hardwallet/start-pairing cofx)))
 
 (handlers/register-handler-fx
  :hardwallet.ui/success-button-pressed
@@ -910,8 +915,10 @@
 
 (handlers/register-handler-fx
  :hardwallet.ui/error-button-pressed
- (fn [{:keys [db]} _]
-   {:db (assoc-in db [:hardwallet :setup-step] :begin)}))
+ (fn [{:keys [db] :as cofx} _]
+   (fx/merge cofx
+             {:db (assoc-in db [:hardwallet :setup-step] :begin)}
+             (navigation/navigate-to-cofx :hardwallet-connect nil))))
 
 ;; browser module
 
