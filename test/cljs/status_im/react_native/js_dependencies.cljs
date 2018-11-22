@@ -16,7 +16,6 @@
 (def orientation            #js {})
 (def popup-menu             #js {})
 (def qr-code                #js {})
-(def nfc-manager            #js {:default #js {}})
 (def react-native
   #js {:NativeModules      #js {}
        :Animated           #js {:View #js {}

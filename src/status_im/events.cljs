@@ -759,13 +759,33 @@
 
 (handlers/register-handler-fx
  :hardwallet.callback/on-pairing-success
- (fn [cofx [_ pairing-data]]
-   (hardwallet/on-pairing-success cofx #js {})))
+ (fn [cofx [_ pairing]]
+   (hardwallet/on-pairing-success cofx pairing)))
 
 (handlers/register-handler-fx
  :hardwallet.callback/on-pairing-error
  (fn [cofx [_ error]]
    (hardwallet/on-pairing-error cofx error)))
+
+(handlers/register-handler-fx
+ :hardwallet.callback/on-generate-mnemonic-success
+ (fn [cofx [_ mnemonic]]
+   (hardwallet/on-generate-mnemonic-success cofx mnemonic)))
+
+(handlers/register-handler-fx
+ :hardwallet.callback/on-generate-mnemonic-error
+ (fn [cofx [_ error]]
+   (hardwallet/on-generate-mnemonic-error cofx error)))
+
+(handlers/register-handler-fx
+ :hardwallet.callback/on-save-mnemonic-success
+ (fn [cofx]
+   (hardwallet/on-save-mnemonic-success cofx)))
+
+(handlers/register-handler-fx
+ :hardwallet.callback/on-save-mnemonic-error
+ (fn [cofx [_ error]]
+   (hardwallet/on-save-mnemonic-error cofx error)))
 
 (handlers/register-handler-fx
  :hardwallet.callback/on-pin-validated
@@ -796,11 +816,6 @@
    {:hardwallet/open-nfc-settings nil}))
 
 (handlers/register-handler-fx
- :hardwallet.ui/connect-info-button-pressed
- (fn [cofx _]
-   (browser/open-url cofx "https://hardwallet.status.im")))
-
-(handlers/register-handler-fx
  :hardwallet.ui/hold-card-button-pressed
  (fn [{:keys [db] :as cofx} _]
    (fx/merge cofx
@@ -810,7 +825,7 @@
 (handlers/register-handler-fx
  :hardwallet.ui/begin-setup-button-pressed
  (fn [cofx _]
-   (hardwallet/start-initialization cofx)))
+   (hardwallet/initialize-card cofx)))
 
 (handlers/register-handler-fx
  :hardwallet.ui/pair-card-button-pressed
@@ -825,16 +840,6 @@
 (handlers/register-handler-fx
  :hardwallet.ui/pair-code-next-button-pressed
  (fn [{:keys [db]} _]))
-
-(handlers/register-handler-fx
- :hardwallet.ui/no-pairing-slots-help-button-pressed
- (fn [cofx _]
-   (browser/open-url "https://hardwallet.status.im" cofx)))
-
-(handlers/register-handler-fx
- :hardwallet.ui/card-already-linked-help-button-pressed
- (fn [cofx _]
-   (browser/open-url "https://hardwallet.status.im" cofx)))
 
 (handlers/register-handler-fx
  :hardwallet.ui/recovery-phrase-next-button-pressed
@@ -854,7 +859,7 @@
 (handlers/register-handler-fx
  :hardwallet.ui/recovery-phrase-confirm-pressed
  (fn [cofx _]
-   (navigation/navigate-to-cofx cofx :hardwallet-success nil)))
+   (hardwallet/on-mnemonic-confirmed cofx)))
 
 (handlers/register-handler-fx
  :hardwallet.ui/recovery-phrase-cancel-pressed
@@ -888,7 +893,7 @@
 (handlers/register-handler-fx
  :hardwallet.ui/secret-keys-dialog-confirm-pressed
  (fn [cofx _]
-   (hardwallet/start-pairing cofx)))
+   (hardwallet/pair cofx)))
 
 (handlers/register-handler-fx
  :hardwallet.ui/success-button-pressed
@@ -905,6 +910,11 @@
  (fn [{:keys [db]} [_ step]]
    (when-not (empty? (get-in db [:hardwallet :pin step]))
      {:db (update-in db [:hardwallet :pin step] pop)})))
+
+(handlers/register-handler-fx
+ :hardwallet.ui/generate-mnemonic-button-pressed
+ (fn [cofx _]
+   (hardwallet/generate-mnemonic cofx)))
 
 (handlers/register-handler-fx
  :hardwallet.ui/create-pin-button-pressed

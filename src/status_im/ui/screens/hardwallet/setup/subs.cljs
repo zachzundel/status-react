@@ -37,3 +37,8 @@
  :hardwallet-setup-error
  (fn [db]
    (get-in db [:hardwallet :setup-error])))
+
+(re-frame/reg-sub
+ :hardwallet-mnemonic
+ (fn [db]
+   (get-in db [:hardwallet :secrets :mnemonic])))

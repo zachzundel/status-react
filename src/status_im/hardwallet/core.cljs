@@ -1,6 +1,6 @@
 (ns status-im.hardwallet.core
   (:require [re-frame.core :as re-frame]
-            [status-im.react-native.js-dependencies :as js-dependencies]
+            status-im.hardwallet.fx
             [status-im.ui.screens.navigation :as navigation]
             [status-im.utils.config :as config]
             [status-im.utils.fx :as fx]
@@ -17,20 +17,10 @@
             [status-im.i18n :as i18n]
             [status-im.accounts.login.core :as accounts.login]))
 
-(def status (.-Status (.-NativeModules js-dependencies/react-native)))
-(def event-emitter (.-DeviceEventEmitter js-dependencies/react-native))
-
-(defn check-nfc-support []
-  (when config/hardwallet-enabled?
-    (.scNfcIsSupported
-     status
-     #(re-frame/dispatch [:hardwallet.callback/check-nfc-support-success %]))))
-
-(defn check-nfc-enabled []
-  (when platform/android?
-    (.scNfcIsEnabled
-     status
-     #(re-frame/dispatch [:hardwallet.callback/check-nfc-enabled-success %]))))
+(defn hardwallet-supported? [{:keys [db]}]
+  (and config/hardwallet-enabled?
+       platform/android?
+       (get-in db [:hardwallet :nfc-supported?])))
 
 (fx/defn set-nfc-support
   [{:keys [db]} supported?]
@@ -40,12 +30,6 @@
   [{:keys [db]} enabled?]
   {:db (assoc-in db [:hardwallet :nfc-enabled?] enabled?)})
 
-(defn open-nfc-settings []
-  (when platform/android?
-    (.. js-dependencies/nfc-manager
-        -default
-        goToNfcSetting)))
-
 (fx/defn navigate-to-connect-screen [cofx]
   (fx/merge cofx
             {:hardwallet/check-nfc-enabled  nil
@@ -54,16 +38,12 @@
 
 (fx/defn success-button-pressed [cofx]
   (fx/merge cofx
-            (accounts.login/user-login cofx)))
+            ;(accounts.login/user-login cofx)
+))
 
-(fx/defn start-pairing [{:keys [db] :as cofx}]
+(fx/defn pair [{:keys [db] :as cofx}]
   {:db              (assoc-in db [:hardwallet :setup-step] :pairing)
    :hardwallet/pair cofx})
-
-(defn hardwallet-supported? [db]
-  (and config/hardwallet-enabled?
-       platform/android?
-       (get-in db [:hardwallet :nfc-supported?])))
 
 (fx/defn return-back-from-nfc-settings [{:keys [db]}]
   (when (= :hardwallet-connect (:view-id db))
@@ -104,34 +84,10 @@
                  (get-in db' [:hardwallet :pin :confirmation])))
       (pin-mismatch))))
 
-(defn- start-module []
-  (when config/hardwallet-enabled?
-    (.scStart status)))
-
-(defn- initialize-card []
-  (when config/hardwallet-enabled?
-    (.scInit status
-             #(re-frame/dispatch [:hardwallet.callback/on-initialization-success %])
-             #(re-frame/dispatch [:hardwallet.callback/on-initialization-error %]))))
-
-(defn- register-tag-event []
-  (when config/hardwallet-enabled?
-    (.addListener event-emitter
-                  "scOnConnected"
-                  #(re-frame/dispatch [:hardwallet.callback/on-tag-discovered %]))
-
-    (.addListener event-emitter
-                  "scOnDisconnected"
-                  #(log/debug "[hardwallet] card disconnected"))))
-
-(defn- pair [cofx]
-  (let [pairing-password (get-in cofx [:db :hardwallet :secrets :password])]
-    (prn "pair pass" pairing-password)
-    (when pairing-password
-      (.scPair status
-               pairing-password
-               #(re-frame/dispatch [:hardwallet.callback/on-pairing-success %])
-               #(re-frame/dispatch [:hardwallet.callback/on-pairing-error %])))))
+(fx/defn generate-mnemonic [{:keys [db] :as cofx}]
+  (fx/merge cofx
+            {:db                           (assoc-in db [:hardwallet :setup-step] :generating-mnemonic)
+             :hardwallet/generate-mnemonic cofx}))
 
 (fx/defn on-tag-discovered [{:keys [db] :as cofx} data]
   (let [data' (js->clj data :keywordize-keys true)
@@ -143,7 +99,7 @@
               {:db (assoc-in db [:hardwallet :setup-step] :begin)}
               (navigation/navigate-to-cofx :hardwallet-setup nil))))
 
-(fx/defn start-initialization [{:keys [db]}]
+(fx/defn initialize-card [{:keys [db]}]
   {:hardwallet/initialize-card nil
    :db                         (assoc-in db [:hardwallet :setup-step] :preparing)})
 
@@ -162,12 +118,10 @@
            (assoc-in [:hardwallet :setup-error] error))})
 
 (fx/defn on-pairing-success
-  [{:keys [db]} pairing-data]
-  (let [data (js->clj pairing-data :keywordize-keys true)]
-    (log/debug "[hardwallet] pairing data: " data)
-    {:db (-> db
-             (assoc-in [:hardwallet :setup-step] :card-ready)
-             (assoc-in [:hardwallet :pairing] data))}))
+  [{:keys [db]} pairing]
+  {:db (-> db
+           (assoc-in [:hardwallet :setup-step] :card-ready)
+           (assoc-in [:hardwallet :secrets :pairing] pairing))})
 
 (fx/defn on-pairing-error
   [{:keys [db]} error]
@@ -176,16 +130,32 @@
            (assoc-in [:hardwallet :setup-step] :error)
            (assoc-in [:hardwallet :setup-error] error))})
 
-(defn create-account [password]
-  (status/create-account
-   password
-   #(re-frame/dispatch [:hardwallet.callback/create-account-success (types/json->clj %) password])))
+(fx/defn on-generate-mnemonic-success
+  [{:keys [db]} mnemonic]
+  {:db (-> db
+           (assoc-in [:hardwallet :setup-step] :recovery-phrase)
+           (assoc-in [:hardwallet :secrets :mnemonic] mnemonic))})
+
+(fx/defn on-generate-mnemonic-error
+  [{:keys [db]} error]
+  (log/debug "[hardwallet] generate mnemonic error: " error)
+  {:db (-> db
+           (assoc-in [:hardwallet :setup-step] :error)
+           (assoc-in [:hardwallet :setup-error] error))})
 
 (fx/defn on-pin-validated [{:keys [db] :as cofx}]
   (let [pin (get-in db [:hardwallet :pin :original])
         password (apply str pin)]
     (fx/merge cofx
-              {:hardwallet/create-account password})))
+              ;{:hardwallet/create-account password}
+)))
+
+;; create account start
+
+(defn create-account [password]
+  (status/create-account
+   password
+   #(re-frame/dispatch [:hardwallet.callback/create-account-success (types/json->clj %) password])))
 
 (fx/defn add-account
   "Takes db and new account, creates map of effects describing adding account to database and realm"
@@ -231,10 +201,10 @@
             {:db (assoc-in db [:hardwallet :setup-step] :recovery-phrase)}
             (on-account-created result password false)))
 
+;; create account finish
+
 (fx/defn recovery-phrase-start-confirmation [{:keys [db]}]
-  (let [{:keys [mnemonic]} (or (get-in db [:accounts/accounts
-                                           (get-in db [:accounts/login :address])])
-                               (:account/account db))
+  (let [mnemonic (get-in db [:hardwallet :secrets :mnemonic])
         [word1 word2] (shuffle (map-indexed vector (clojure.string/split mnemonic #" ")))
         word1 (zipmap [:idx :word] word1)
         word2 (zipmap [:idx :word] word2)]
@@ -272,34 +242,26 @@
         (show-recover-confirmation))
       {:db (assoc-in db [:hardwallet :recovery-phrase :confirm-error] (i18n/label :t/wrong-word))})))
 
-(re-frame/reg-fx
- :hardwallet/check-nfc-support
- check-nfc-support)
+(fx/defn on-mnemonic-confirmed
+  [cofx]
+  (fx/merge cofx
+            {:hardwallet/save-mnemonic cofx}))
 
-(re-frame/reg-fx
- :hardwallet/check-nfc-enabled
- check-nfc-enabled)
+(fx/defn on-save-mnemonic-success
+  [{:keys [db] :as cofx}]
+  (fx/merge cofx
+            {:db (-> db
+                     (update-in [:hardwallet] dissoc :secrets)
+                     (update-in [:hardwallet] dissoc :recovery-phrase))}
+            (navigation/navigate-to-cofx :hardwallet-success nil)))
 
-(re-frame/reg-fx
- :hardwallet/open-nfc-settings
- open-nfc-settings)
-
-(re-frame/reg-fx
- :hardwallet/start-module
- start-module)
-
-(re-frame/reg-fx
- :hardwallet/initialize-card
- initialize-card)
-
-(re-frame/reg-fx
- :hardwallet/register-tag-event
- register-tag-event)
+(fx/defn on-save-mnemonic-error
+  [{:keys [db]} error]
+  (log/debug "[hardwallet] save mnemonic error: " error)
+  {:db (-> db
+           (assoc-in [:hardwallet :setup-step] :error)
+           (assoc-in [:hardwallet :setup-error] error))})
 
 (re-frame/reg-fx
  :hardwallet/create-account
  create-account)
-
-(re-frame/reg-fx
- :hardwallet/pair
- pair)

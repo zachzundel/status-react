@@ -35,8 +35,6 @@ import org.json.JSONException;
 
 import javax.annotation.Nullable;
 
-import im.status.hardwallet_lite_android.io.APDUException;
-
 class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventListener, ConnectorHandler {
 
     private static final String TAG = "StatusModule";
@@ -51,7 +49,6 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
     private boolean debug;
     private boolean devCluster;
     private ReactApplicationContext reactContext;
-    private SmartCard smartCard;
 
     StatusModule(ReactApplicationContext reactContext, boolean debug, boolean devCluster) {
         super(reactContext);
@@ -81,10 +78,6 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
         if (status == null) {
             status = new ServiceConnector(currentActivity, StatusService.class);
             status.registerHandler(this);
-        }
-
-        if (smartCard == null) {
-            smartCard = new SmartCard(getCurrentActivity(), reactContext);
         }
 
         status.bindService();
@@ -784,50 +777,4 @@ class StatusModule extends ReactContextBaseJavaModule implements LifecycleEventL
     return constants;
   }
 
-  /* SMARTCARD METHODS */
-
-  @ReactMethod
-  public void scNfcIsSupported(final Callback callback) {
-      callback.invoke(smartCard.isNfcSupported());
-  }
-
-  @ReactMethod
-  public void scNfcIsEnabled(final Callback callback) {
-      callback.invoke(smartCard.isNfcEnabled());
-  }
-
-  @ReactMethod
-  public void scStart() {
-      smartCard.start();
-  }
-
-  @ReactMethod
-  public void scInit(final Callback successCallback, final Callback errorCallback) {
-      try {
-          SmartCardSecrets s = smartCard.init();
-
-          WritableMap params = Arguments.createMap();
-          params.putString("pin", s.getPin());
-          params.putString("puk", s.getPuk());
-          params.putString("password", s.getPairingPassword());
-
-          successCallback.invoke(params);
-      } catch (IOException | APDUException | NoSuchAlgorithmException | InvalidKeySpecException e) {
-          Log.d("installer-debug", e.getMessage());
-          errorCallback.invoke(e.getMessage());
-      }
-  }
-
-  @ReactMethod
-  public void scPair(final String pairingPassword, final Callback successCallback, final Callback errorCallback) {
-       try {
-           smartCard.pair(pairingPassword);
-           Log.d("scPair", "pairing done");
-
-           successCallback.invoke();
-       } catch (IOException e) {
-           Log.d("scPair error", e.getMessage());
-           errorCallback.invoke(e.getMessage());
-       }
-   }
 }

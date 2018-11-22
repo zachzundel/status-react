@@ -77,17 +77,17 @@
      ;TODO(dmitryn) translate
      [react/text {:style           styles/estimated-time-text
                   :number-of-lines 2}
-      "Next protect ownership of the card\n creating PIN"]]]
-   [react/view styles/next-button-container
-    [react/view components.styles/flex]
-    [components.common/bottom-button
-     {:on-press #(re-frame/dispatch [:hardwallet.ui/create-pin-button-pressed])
-      :label    (i18n/label :t/create-pin)
-      :forward? true}]]])
+      "Generate mnemonic"]]
+    [react/view styles/next-button-container
+     [react/view components.styles/flex]
+     [components.common/bottom-button
+      {:on-press #(re-frame/dispatch [:hardwallet.ui/generate-mnemonic-button-pressed])
+       :label    "GENERATE MNEMONIC"
+       :forward? true}]]]])
 
 (defview recovery-phrase []
-  (letsubs [account [:accounts/get-by-login-address]]
-    (let [mnemonic-vec (vec (map-indexed vector (clojure.string/split (:mnemonic account) #" ")))]
+  (letsubs [mnemonic [:hardwallet-mnemonic]]
+    (let [mnemonic-vec (vec (map-indexed vector (clojure.string/split mnemonic #" ")))]
       [react/view styles/card-ready-container
        [react/view styles/card-ready-inner-container
         [react/view styles/center-container
@@ -176,7 +176,7 @@
         :forward?  true}]]]))
 
 (defn- card-with-button-view
-  [{:keys [text-label button-label button-container-style on-press-event]}]
+  [{:keys [text-label button-label button-container-style on-press]}]
   "Generic view with centered card image and button at the bottom.
   Used by 'Prepare', 'Pair', 'No slots', 'Card is linked' screens"
   [react/view styles/card-with-button-view-container
@@ -187,7 +187,7 @@
      [react/text {:style styles/center-text}
       (i18n/label text-label)]]]
    [react/touchable-highlight
-    {:on-press #(re-frame/dispatch [on-press-event])}
+    {:on-press on-press}
     [react/view (merge styles/bottom-button-container button-container-style)
      [react/text {:style      styles/bottom-button-text
                   :font       :medium
@@ -232,19 +232,19 @@
 (defn pair []
   [card-with-button-view {:text-label     :t/pair-card-question
                           :button-label   :t/pair-card
-                          :on-press-event :hardwallet.ui/pair-card-button-pressed}])
+                          :on-press-event #(re-frame/dispatch [:hardwallet.ui/pair-card-button-pressed])}])
 
 (defn no-slots []
   [card-with-button-view {:text-label             :t/no-pairing-slots-available
                           :button-label           :t/help
                           :button-container-style {:background-color colors/white}
-                          :on-press-event         :hardwallet.ui/no-pairing-slots-help-button-pressed}])
+                          :on-press-event         (.openURL react/linking "https://hardwallet.status.im")}])
 
 (defn card-already-linked []
   [card-with-button-view {:text-label             :t/card-already-linked
                           :button-label           :t/help
                           :button-container-style {:background-color colors/white}
-                          :on-press-event         :hardwallet.ui/card-already-linked-help-button-pressed}])
+                          :on-press-event         (.openURL react/linking "https://hardwallet.status.im")}])
 
 (defview error []
   (letsubs [error [:hardwallet-setup-error]]
@@ -295,6 +295,10 @@
   [loading-view {:title-label            :t/pairing-card
                  :estimated-time-seconds 30}])
 
+(defn generating-mnemonic []
+  [loading-view {:title-label            "Generating mnemonic"
+                 :estimated-time-seconds 30}])
+
 (defn complete []
   [loading-view {:title-label            :t/completing-card-setup
                  :estimated-time-seconds 30
@@ -308,6 +312,7 @@
     :card-ready [card-ready]
     :complete [complete]
     :pair [pair]
+    :generating-mnemonic [generating-mnemonic]
     :enter-pair-code [enter-pair-code]
     :no-slots [no-slots]
     :card-already-linked [card-already-linked]

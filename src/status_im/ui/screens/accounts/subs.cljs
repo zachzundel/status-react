@@ -10,14 +10,6 @@
    (:accounts/accounts db)))
 
 (re-frame/reg-sub
- :accounts/get-by-login-address
- (fn [db]
-   (or
-    (get-in db [:accounts/accounts
-                (get-in db [:accounts/login :address])])
-    (:account/account db))))
-
-(re-frame/reg-sub
  :accounts/login
  (fn [db]
    (:accounts/login db)))
