@@ -6,7 +6,8 @@
             [status-im.ui.components.icons.vector-icons :as vector-icons]
             [status-im.ui.components.react :as react]
             [status-im.i18n :as i18n]
-            [status-im.ui.components.colors :as colors]))
+            [status-im.ui.components.colors :as colors]
+            [re-frame.core :as re-frame]))
 
 (defn application-info [info visible?]
   [react/modal {:visible          @visible?
@@ -47,7 +48,9 @@
       :display-name        "maintain-card"
       :reagent-render      (fn [] [react/view styles/maintain-card-container
                                    [react/touchable-highlight
-                                    {:on-press #(reset! modal-visible? true)}
+                                    {:on-press #(do
+                                                  (re-frame/dispatch [:hardwallet.ui/get-application-info])
+                                                  (reset! modal-visible? true))}
                                     [react/view styles/hardwallet-icon-container
                                      [vector-icons/icon :icons/hardwallet {:color colors/blue}]
                                      [vector-icons/icon :icons/indicator-small {:color           colors/blue

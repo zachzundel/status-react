@@ -733,6 +733,11 @@
 ;; hardwallet module
 
 (handlers/register-handler-fx
+ :hardwallet.ui/get-application-info
+ (fn [_ _]
+   {:hardwallet/get-application-info nil}))
+
+(handlers/register-handler-fx
  :hardwallet.callback/get-application-info-success
  (fn [cofx [_ info]]
    (hardwallet/on-application-info-received cofx info)))
