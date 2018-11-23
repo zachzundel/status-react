@@ -42,3 +42,8 @@
  :hardwallet-mnemonic
  (fn [db]
    (get-in db [:hardwallet :secrets :mnemonic])))
+
+(re-frame/reg-sub
+ :hardwallet-application-info
+ (fn [db]
+   (get-in db [:hardwallet :application-info])))

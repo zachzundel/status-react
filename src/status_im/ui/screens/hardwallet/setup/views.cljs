@@ -325,9 +325,10 @@
     [begin]))
 
 (defview hardwallet-setup []
-  (letsubs [step [:hardwallet-setup-step]]
+  (letsubs [step [:hardwallet-setup-step]
+            app-info [:hardwallet-application-info]]
     [react/keyboard-avoiding-view components.styles/flex
      [react/view styles/container
       [react/view styles/inner-container
-       [components/maintain-card]
+       [components/maintain-card app-info]
        [content step]]]]))

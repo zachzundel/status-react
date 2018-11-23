@@ -26,7 +26,7 @@
 
 (defn start []
   (when config/hardwallet-enabled?
-    (.start keycard)))
+    (.start keycard #() #())))
 
 (defn initialize []
   (when config/hardwallet-enabled?
@@ -69,4 +69,9 @@
                      pin
                      #(re-frame/dispatch [:hardwallet.callback/on-save-mnemonic-success %])
                      #(re-frame/dispatch [:hardwallet.callback/on-save-mnemonic-error %])))))
+
+(defn get-application-info []
+  (.getApplicationInfo keycard
+                       #(re-frame/dispatch [:hardwallet.callback/get-application-info-success %])
+                       #(re-frame/dispatch [:hardwallet.callback/get-application-info-error %])))
 

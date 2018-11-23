@@ -3,6 +3,10 @@
             [status-im.hardwallet.card :as card]))
 
 (re-frame/reg-fx
+ :hardwallet/get-application-info
+ card/get-application-info)
+
+(re-frame/reg-fx
  :hardwallet/check-nfc-support
  card/check-nfc-support)
 

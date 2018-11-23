@@ -22,6 +22,10 @@
        platform/android?
        (get-in db [:hardwallet :nfc-supported?])))
 
+(fx/defn on-application-info-received [{:keys [db]} info]
+  (let [info' (js->clj info :keywordize-keys true)]
+    {:db (assoc-in db [:hardwallet :application-info] info')}))
+
 (fx/defn set-nfc-support
   [{:keys [db]} supported?]
   {:db (assoc-in db [:hardwallet :nfc-supported?] supported?)})
@@ -96,7 +100,8 @@
     (log/debug "[hardwallet] " (str "tag payload: " (clojure.string/join
                                                      (map js/String.fromCharCode payload))))
     (fx/merge cofx
-              {:db (assoc-in db [:hardwallet :setup-step] :begin)}
+              {:db                              (assoc-in db [:hardwallet :setup-step] :begin)
+               :hardwallet/get-application-info nil}
               (navigation/navigate-to-cofx :hardwallet-setup nil))))
 
 (fx/defn initialize-card [{:keys [db]}]
