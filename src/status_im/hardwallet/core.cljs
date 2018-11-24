@@ -37,7 +37,7 @@
 (fx/defn navigate-to-connect-screen [cofx]
   (fx/merge cofx
             {:hardwallet/check-nfc-enabled  nil
-             :hardwallet/register-tag-event nil}
+             :hardwallet/register-card-events nil}
             (navigation/navigate-to-cofx :hardwallet-connect nil)))
 
 (fx/defn success-button-pressed [cofx]
@@ -88,23 +88,32 @@
                  (get-in db' [:hardwallet :pin :confirmation])))
       (pin-mismatch))))
 
-(fx/defn generate-mnemonic [{:keys [db] :as cofx}]
+(fx/defn generate-mnemonic
+  [{:keys [db] :as cofx}]
   (fx/merge cofx
             {:db                           (assoc-in db [:hardwallet :setup-step] :generating-mnemonic)
              :hardwallet/generate-mnemonic cofx}))
 
-(fx/defn on-tag-discovered [{:keys [db] :as cofx} data]
+(fx/defn on-card-connected
+  [{:keys [db] :as cofx} data]
   (let [data' (js->clj data :keywordize-keys true)
         payload (get-in data' [:ndefMessage 0 :payload])]
-    (log/debug "[hardwallet] on tag discovered" data')
+    (log/debug "[hardwallet] on card connected" data')
     (log/debug "[hardwallet] " (str "tag payload: " (clojure.string/join
                                                      (map js/String.fromCharCode payload))))
     (fx/merge cofx
-              {:db                              (assoc-in db [:hardwallet :setup-step] :begin)
+              {:db                              (-> db
+                                                    (assoc-in [:hardwallet :setup-step] :begin)
+                                                    (assoc-in [:hardwallet :card-connected?] true))
                :hardwallet/get-application-info nil}
               (navigation/navigate-to-cofx :hardwallet-setup nil))))
 
-(fx/defn initialize-card [{:keys [db]}]
+(fx/defn on-card-disconnected
+  [{:keys [db]} data]
+  {:db (assoc-in db [:hardwallet :card-connected?] false)})
+
+(fx/defn initialize-card
+  [{:keys [db]}]
   {:hardwallet/initialize-card nil
    :db                         (assoc-in db [:hardwallet :setup-step] :preparing)})
 

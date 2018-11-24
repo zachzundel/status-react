@@ -27,8 +27,8 @@
  card/initialize)
 
 (re-frame/reg-fx
- :hardwallet/register-tag-event
- card/register-tag-event)
+ :hardwallet/register-card-events
+ card/register-card-events)
 
 (re-frame/reg-fx
  :hardwallet/pair

@@ -758,9 +758,14 @@
    (hardwallet/set-nfc-enabled cofx enabled?)))
 
 (handlers/register-handler-fx
- :hardwallet.callback/on-tag-discovered
+ :hardwallet.callback/on-card-connected
  (fn [cofx [_ data]]
-   (hardwallet/on-tag-discovered cofx data)))
+   (hardwallet/on-card-connected cofx data)))
+
+(handlers/register-handler-fx
+ :hardwallet.callback/on-card-disconnected
+ (fn [cofx [_ data]]
+   (hardwallet/on-card-disconnected cofx data)))
 
 (handlers/register-handler-fx
  :hardwallet.callback/on-initialization-success

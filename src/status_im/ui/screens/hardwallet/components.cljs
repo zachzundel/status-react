@@ -11,7 +11,8 @@
 
 (defn application-info [info visible?]
   [react/modal {:visible          @visible?
-                :transparent      false}
+                :transparent      false
+                :on-request-close #()}
    [react/view {:padding         20
                 :justify-content :center}
     [react/text {:style {:font-size   18
