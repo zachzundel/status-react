@@ -188,6 +188,12 @@ def pytest_unconfigure(config):
             repo = Github(github_token).get_user('status-im').get_repo('status-react')
             pull = repo.get_pull(int(config.getoption('pr_number')))
             pull.create_issue_comment(github_report.build_html_report(testrail_report.run_id))
+            if testrail_report.outcomes['undefined_fail']:
+                print(pull.mergeable)
+                print('!!!!')
+                pull.get_commits()[0].create_status(state='error', context='E2e tests failed!')
+                print(pull.get_commits()[0].get_combined_status())
+                print(pull.mergeable)
 
 
 @pytest.mark.hookwrapper

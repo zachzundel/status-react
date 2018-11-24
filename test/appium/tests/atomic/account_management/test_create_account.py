@@ -8,11 +8,13 @@ from views.sign_in_view import SignInView
 @marks.account
 class TestCreateAccount(SingleDeviceTestCase):
 
+    @pytest.mark.pp
     @marks.testrail_id(5300)
     @marks.critical
     @marks.battery_consumption
     def test_create_account(self):
         sign_in = SignInView(self.driver, skip_popups=False)
+        sign_in.profile_button.find_element()
         sign_in.accept_agreements()
         if not sign_in.i_have_account_button.is_element_displayed():
             self.errors.append("'I have an account' button is not displayed")
