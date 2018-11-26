@@ -9,28 +9,33 @@
             [status-im.ui.components.colors :as colors]
             [re-frame.core :as re-frame]))
 
-(defn application-info [info visible?]
-  [react/modal {:visible          @visible?
-                :transparent      false
-                :on-request-close #()}
-   [react/view {:padding         20
-                :justify-content :center}
-    [react/text {:style {:font-size   18
-                         :font-weight :bold}}
-     "Application info"]
-    [react/view {:margin-top 20}
-     (for [[k v] info]
-       ^{:key k} [react/text {:style {:font-size 15}}
-                  (str k " " v)])]
-    [react/touchable-highlight
-     {:on-press #(reset! visible? false)}
-     [react/view {:align-items :center
-                  :text-style  :underline
-                  :margin-top  28}
-      [react/text {:style {:font-size 18}}
-       "Close window"]]]]])
+(defview application-info [visible?]
+  (letsubs [info [:hardwallet-application-info]
+            error [:hardwallet-application-info-error]]
+    [react/modal {:visible          @visible?
+                  :transparent      false
+                  :on-request-close #()}
+     [react/view {:padding         20
+                  :justify-content :center}
+      [react/text {:style {:font-size   18
+                           :font-weight :bold}}
+       "Application info"]
+      [react/view {:margin-top 20}
+       (if-not error
+         (for [[k v] info]
+           ^{:key k} [react/text {:style {:font-size 15}}
+                      (str k " " v)])
+         [react/text {:style {:font-size 15}}
+          error])]
+      [react/touchable-highlight
+       {:on-press #(reset! visible? false)}
+       [react/view {:align-items :center
+                    :text-style  :underline
+                    :margin-top  28}
+        [react/text {:style {:font-size 18}}
+         "Close window"]]]]]))
 
-(defn maintain-card [app-info]
+(defn maintain-card []
   (let [modal-visible? (reagent/atom false)
         animation-value (animation/create-value 0)
         ;TODO(dmitryn): make animation smoother
@@ -66,7 +71,7 @@
                                    [react/text {:style           styles/maintain-card-text
                                                 :number-of-lines 2}
                                     (i18n/label :t/maintain-card-to-phone-contact)]
-                                   [application-info app-info modal-visible?]])})))
+                                   [application-info modal-visible?]])})))
 
 (defn- wizard-step [step-number]
   (when step-number

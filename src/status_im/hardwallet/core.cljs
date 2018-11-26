@@ -22,9 +22,16 @@
        platform/android?
        (get-in db [:hardwallet :nfc-supported?])))
 
-(fx/defn on-application-info-received [{:keys [db]} info]
+(fx/defn on-application-info-success [{:keys [db]} info]
   (let [info' (js->clj info :keywordize-keys true)]
-    {:db (assoc-in db [:hardwallet :application-info] info')}))
+    {:db (-> db
+             (assoc-in [:hardwallet :application-info] info')
+             (assoc-in [:hardwallet :application-info-error] nil))}))
+
+(fx/defn on-application-info-error
+  [{:keys [db]} error]
+  (log/debug "[hardwallet] application info error " error)
+  {:db (assoc-in db [:hardwallet :application-info-error] error)})
 
 (fx/defn set-nfc-support
   [{:keys [db]} supported?]

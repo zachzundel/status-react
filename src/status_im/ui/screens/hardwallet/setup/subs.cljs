@@ -47,3 +47,8 @@
  :hardwallet-application-info
  (fn [db]
    (get-in db [:hardwallet :application-info])))
+
+(re-frame/reg-sub
+ :hardwallet-application-info-error
+ (fn [db]
+   (get-in db [:hardwallet :application-info-error])))

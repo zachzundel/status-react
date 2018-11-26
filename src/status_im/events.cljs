@@ -740,12 +740,12 @@
 (handlers/register-handler-fx
  :hardwallet.callback/get-application-info-success
  (fn [cofx [_ info]]
-   (hardwallet/on-application-info-received cofx info)))
+   (hardwallet/on-application-info-success cofx info)))
 
 (handlers/register-handler-fx
  :hardwallet.callback/get-application-info-error
- (fn [_ [_ error]]
-   (log/debug "[hardwallet] application info error " error)))
+ (fn [cofx [_ error]]
+   (hardwallet/on-application-info-error cofx error)))
 
 (handlers/register-handler-fx
  :hardwallet.callback/check-nfc-support-success
