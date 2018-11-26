@@ -23,7 +23,7 @@
     (let [name (or chat-name
                    (gfycat/generate-gfy public-key))
           [unviewed-messages-label large?] (if (< 9 unviewed-messages-count)
-                                             ["9+" true]
+                                             [unviewed-messages-count true]
                                              [unviewed-messages-count false])
           current? (= current-chat-id chat-id)]
       [react/view {:style (styles/chat-list-item current?)}

@@ -28,7 +28,7 @@
 
 (defn- counter [cnt]
   (let [[unviewed-messages-label large?] (if (< 9 cnt)
-                                           ["9+" true]
+                                           [cnt true]
                                            [cnt false])]
     [react/view {:style tabs.styles/unread-messages-icon}
      [react/text {:style (tabs.styles/unread-messages-text large?)} unviewed-messages-label]]))
