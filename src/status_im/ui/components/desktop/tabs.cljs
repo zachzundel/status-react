@@ -5,7 +5,8 @@
             [taoensso.timbre :as log]
             [status-im.ui.components.colors :as colors]
             [status-im.ui.components.react :as react]
-            [status-im.ui.screens.main-tabs.styles :as tabs.styles])
+            [status-im.ui.screens.main-tabs.styles :as tabs.styles]
+            [status-im.utils.utils :as utils])
   (:require-macros [status-im.utils.views :as views]))
 
 ;;TODO copy-pate with minimum modifications of status-react tabs
@@ -27,9 +28,7 @@
     :count-subscription  :get-profile-unread-messages-number}])
 
 (defn- counter [cnt]
-  (let [[unviewed-messages-label large?] (if (< 9 cnt)
-                                           [cnt true]
-                                           [cnt false])]
+  (let [[unviewed-messages-label large?] [(utils/unread-messages-count cnt) true]]
     [react/view {:style tabs.styles/unread-messages-icon}
      [react/text {:style (tabs.styles/unread-messages-text large?)} unviewed-messages-label]]))
 
