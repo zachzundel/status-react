@@ -738,14 +738,34 @@
    {:hardwallet/get-application-info nil}))
 
 (handlers/register-handler-fx
- :hardwallet.callback/get-application-info-success
+ :hardwallet.callback/on-get-application-info-success
  (fn [cofx [_ info]]
    (hardwallet/on-application-info-success cofx info)))
 
 (handlers/register-handler-fx
- :hardwallet.callback/get-application-info-error
+ :hardwallet.callback/on-get-application-info-error
  (fn [cofx [_ error]]
    (hardwallet/on-application-info-error cofx error)))
+
+(handlers/register-handler-fx
+ :hardwallet.callback/on-derive-key-success
+ (fn [cofx [_ path]]
+   (hardwallet/on-derive-key-success cofx path)))
+
+(handlers/register-handler-fx
+ :hardwallet.callback/on-derive-key-error
+ (fn [cofx [_ error]]
+   (hardwallet/on-derive-key-error cofx error)))
+
+(handlers/register-handler-fx
+ :hardwallet.callback/on-export-key-success
+ (fn [cofx [_ data]]
+   (hardwallet/on-export-key-success cofx data)))
+
+(handlers/register-handler-fx
+ :hardwallet.callback/on-export-key-error
+ (fn [cofx [_ error]]
+   (hardwallet/on-export-key-error cofx error)))
 
 (handlers/register-handler-fx
  :hardwallet.callback/check-nfc-support-success

@@ -41,3 +41,11 @@
 (re-frame/reg-fx
  :hardwallet/save-mnemonic
  card/save-mnemonic)
+
+(re-frame/reg-fx
+ :hardwallet/derive-key
+ card/derive-key)
+
+(re-frame/reg-fx
+ :hardwallet/export-key
+ card/export-key)

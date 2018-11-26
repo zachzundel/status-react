@@ -48,33 +48,46 @@
                   "keyCardOnDisconnected"
                   #(re-frame/dispatch [:hardwallet.callback/on-card-disconnected %]))))
 
-(defn pair [cofx]
-  (let [pairing-password (get-in cofx [:db :hardwallet :secrets :password])]
-    (when pairing-password
-      (.. keycard
-          (pair pairing-password)
-          (then #(re-frame/dispatch [:hardwallet.callback/on-pairing-success %]))
-          (catch #(re-frame/dispatch [:hardwallet.callback/on-pairing-error (str %)]))))))
+(defn pair
+  [{:keys [password]}]
+  (when password
+    (.. keycard
+        (pair password)
+        (then #(re-frame/dispatch [:hardwallet.callback/on-pairing-success %]))
+        (catch #(re-frame/dispatch [:hardwallet.callback/on-pairing-error (str %)])))))
 
-(defn generate-mnemonic [cofx]
-  (let [{:keys [password]} (get-in cofx [:db :hardwallet :secrets])]
-    (when password
-      (.. keycard
-          (generateMnemonic password)
-          (then #(re-frame/dispatch [:hardwallet.callback/on-generate-mnemonic-success %]))
-          (catch #(re-frame/dispatch [:hardwallet.callback/on-generate-mnemonic-error (str %)]))))))
+(defn generate-mnemonic
+  [{:keys [pairing]}]
+  (when pairing
+    (.. keycard
+        (generateMnemonic pairing)
+        (then #(re-frame/dispatch [:hardwallet.callback/on-generate-mnemonic-success %]))
+        (catch #(re-frame/dispatch [:hardwallet.callback/on-generate-mnemonic-error (str %)])))))
 
-(defn save-mnemonic [cofx]
-  (let [{:keys [mnemonic password pin]} (get-in cofx [:db :hardwallet :secrets])]
-    (when password
-      (.. keycard
-          (saveMnemonic mnemonic password pin)
-          (then #(re-frame/dispatch [:hardwallet.callback/on-save-mnemonic-success %]))
-          (catch #(re-frame/dispatch [:hardwallet.callback/on-save-mnemonic-error (str %)]))))))
+(defn save-mnemonic
+  [{:keys [mnemonic pairing pin]}]
+  (when pairing
+    (.. keycard
+        (saveMnemonic mnemonic pairing pin)
+        (then #(re-frame/dispatch [:hardwallet.callback/on-save-mnemonic-success %]))
+        (catch #(re-frame/dispatch [:hardwallet.callback/on-save-mnemonic-error (str %)])))))
 
 (defn get-application-info []
   (.. keycard
       getApplicationInfo
-      (then #(re-frame/dispatch [:hardwallet.callback/get-application-info-success %]))
-      (catch #(re-frame/dispatch [:hardwallet.callback/get-application-info-error (str %)]))))
+      (then #(re-frame/dispatch [:hardwallet.callback/on-get-application-info-success %]))
+      (catch #(re-frame/dispatch [:hardwallet.callback/on-get-application-info-error (str %)]))))
 
+(defn derive-key
+  [{:keys [path pairing pin]}]
+  (.. keycard
+      (deriveKey path pairing pin)
+      (then #(re-frame/dispatch [:hardwallet.callback/on-derive-key-success %]))
+      (catch #(re-frame/dispatch [:hardwallet.callback/on-derive-key-success (str %)]))))
+
+(defn export-key
+  [{:keys [pairing pin]}]
+  (.. keycard
+      (exportKey pairing pin)
+      (then #(re-frame/dispatch [:hardwallet.callback/on-export-key-success %]))
+      (catch #(re-frame/dispatch [:hardwallet.callback/on-export-key-error (str %)]))))

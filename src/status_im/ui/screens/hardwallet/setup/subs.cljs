@@ -52,3 +52,13 @@
  :hardwallet-application-info-error
  (fn [db]
    (get-in db [:hardwallet :application-info-error])))
+
+(re-frame/reg-sub
+ :hardwallet-public-key
+ (fn [db]
+   (get-in db [:hardwallet :public-key])))
+
+(re-frame/reg-sub
+ :hardwallet-address
+ (fn [db]
+   (get-in db [:hardwallet :address])))

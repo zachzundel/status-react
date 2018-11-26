@@ -22,7 +22,8 @@
        platform/android?
        (get-in db [:hardwallet :nfc-supported?])))
 
-(fx/defn on-application-info-success [{:keys [db]} info]
+(fx/defn on-application-info-success
+  [{:keys [db]} info]
   (let [info' (js->clj info :keywordize-keys true)]
     {:db (-> db
              (assoc-in [:hardwallet :application-info] info')
@@ -32,6 +33,34 @@
   [{:keys [db]} error]
   (log/debug "[hardwallet] application info error " error)
   {:db (assoc-in db [:hardwallet :application-info-error] error)})
+
+(fx/defn on-derive-key-success
+  [{:keys [db]} path]
+  (let [{:keys [pairing pin]} (get-in db [:hardwallet :secrets])]
+    {:db                    (-> db
+                                (assoc-in [:hardwallet :derive-key-path] path)
+                                ;(assoc-in [:hardwallet :application-info-error] nil)
+)
+     :hardwallet/export-key {:pairing pairing
+                             :pin     pin}}))
+
+(fx/defn on-derive-key-error
+  [{:keys [db]} error]
+  (log/debug "[hardwallet] derive key error " error)
+  {:db (assoc-in db [:hardwallet :setup-error] error)})
+
+(fx/defn on-export-key-success
+  [{:keys [db] :as cofx} data]
+  (let [key data]
+    (fx/merge cofx
+              {:db (-> db
+                       (assoc-in [:hardwallet :public-key] key))}
+              (navigation/navigate-to-cofx :hardwallet-success nil))))
+
+(fx/defn on-export-key-error
+  [{:keys [db]} error]
+  (log/debug "[hardwallet] export key error " error)
+  {:db (assoc-in db [:hardwallet :setup-error] error)})
 
 (fx/defn set-nfc-support
   [{:keys [db]} supported?]
@@ -43,7 +72,7 @@
 
 (fx/defn navigate-to-connect-screen [cofx]
   (fx/merge cofx
-            {:hardwallet/check-nfc-enabled  nil
+            {:hardwallet/check-nfc-enabled    nil
              :hardwallet/register-card-events nil}
             (navigation/navigate-to-cofx :hardwallet-connect nil)))
 
@@ -53,8 +82,9 @@
 ))
 
 (fx/defn pair [{:keys [db] :as cofx}]
-  {:db              (assoc-in db [:hardwallet :setup-step] :pairing)
-   :hardwallet/pair cofx})
+  (let [{:keys [password]} (get-in cofx [:db :hardwallet :secrets])]
+    {:db              (assoc-in db [:hardwallet :setup-step] :pairing)
+     :hardwallet/pair {:password password}}))
 
 (fx/defn return-back-from-nfc-settings [{:keys [db]}]
   (when (= :hardwallet-connect (:view-id db))
@@ -97,9 +127,10 @@
 
 (fx/defn generate-mnemonic
   [{:keys [db] :as cofx}]
-  (fx/merge cofx
-            {:db                           (assoc-in db [:hardwallet :setup-step] :generating-mnemonic)
-             :hardwallet/generate-mnemonic cofx}))
+  (let [{:keys [pairing]} (get-in cofx [:db :hardwallet :secrets])]
+    (fx/merge cofx
+              {:db                           (assoc-in db [:hardwallet :setup-step] :generating-mnemonic)
+               :hardwallet/generate-mnemonic {:pairing pairing}})))
 
 (fx/defn on-card-connected
   [{:keys [db] :as cofx} data]
@@ -265,16 +296,25 @@
 
 (fx/defn on-mnemonic-confirmed
   [cofx]
-  (fx/merge cofx
-            {:hardwallet/save-mnemonic cofx}))
+  (let [{:keys [mnemonic pairing pin]} (get-in cofx [:db :hardwallet :secrets])]
+    (fx/merge cofx
+              {:hardwallet/save-mnemonic {:mnemonic mnemonic
+                                          :pairing  pairing
+                                          :pin      pin}})))
 
 (fx/defn on-save-mnemonic-success
   [{:keys [db] :as cofx}]
-  (fx/merge cofx
-            {:db (-> db
-                     (update-in [:hardwallet] dissoc :secrets)
-                     (update-in [:hardwallet] dissoc :recovery-phrase))}
-            (navigation/navigate-to-cofx :hardwallet-success nil)))
+  (let [{:keys [pairing pin]} (get-in cofx [:db :hardwallet :secrets])]
+    (fx/merge cofx
+              {:db                    (-> db
+                                          ;TODO: clear secrets
+                                          ;(update-in [:hardwallet] dissoc :secrets)
+                                          (update-in [:hardwallet] dissoc :recovery-phrase))
+               :hardwallet/derive-key {:path    "m/44'/0'/0'/0/0"
+                                       :pairing pairing
+                                       :pin     pin}}
+              ;(navigation/navigate-to-cofx :hardwallet-success nil)
+)))
 
 (fx/defn on-save-mnemonic-error
   [{:keys [db]} error]
