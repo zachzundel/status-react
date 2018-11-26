@@ -74,10 +74,11 @@
                   :number-of-lines 2
                   :font            :bold}
       (i18n/label :t/card-is-paired)]
-     ;TODO(dmitryn) translate
      [react/text {:style           styles/estimated-time-text
                   :number-of-lines 2}
+      ;TODO(dmitryn) translate
       "Generate mnemonic"]]
+    [react/view]
     [react/view styles/next-button-container
      [react/view components.styles/flex]
      [components.common/bottom-button
@@ -89,7 +90,7 @@
   (letsubs [mnemonic [:hardwallet-mnemonic]]
     (let [mnemonic-vec (vec (map-indexed vector (clojure.string/split mnemonic #" ")))]
       [react/view styles/card-ready-container
-       [react/view styles/card-ready-inner-container
+       [react/view styles/recovery-phrase-inner-container
         [react/view styles/center-container
          [react/text {:style           styles/center-title-text
                       :number-of-lines 2
@@ -296,7 +297,7 @@
                  :estimated-time-seconds 30}])
 
 (defn generating-mnemonic []
-  [loading-view {:title-label            "Generating mnemonic"
+  [loading-view {:title-label            :t/generating-mnemonic
                  :estimated-time-seconds 30}])
 
 (defn complete []

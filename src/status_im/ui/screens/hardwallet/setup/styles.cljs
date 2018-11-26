@@ -154,6 +154,9 @@
 (def estimated-time-text
   (assoc generating-codes-for-pairing-text :padding-top 25))
 
+(def recovery-phrase-inner-container
+  {:align-self :center})
+
 (def recovery-phrase-description
   {:padding 16})
 
@@ -220,7 +223,9 @@
 (def card-ready-container secret-keys-container)
 
 (def card-ready-inner-container
-  {:align-self :center})
+  {:align-self      :center
+   :flex            1
+   :justify-content :space-between})
 
 ;; enter pair code
 
