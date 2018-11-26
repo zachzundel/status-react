@@ -3,13 +3,17 @@
             [status-im.accounts.db :as accounts.db]
             [status-im.data-store.core :as data-store]
             [status-im.native-module.core :as status]
-            [status-im.node.core :as node]
             [status-im.ui.screens.navigation :as navigation]
             [status-im.utils.fx :as fx]
             [status-im.utils.keychain.core :as keychain]
             [status-im.utils.types :as types]
             [taoensso.timbre :as log]
-            [status-im.utils.security :as security]))
+            [status-im.utils.security :as security]
+            [status-im.utils.platform :as platform]
+            [status-im.protocol.core :as protocol]
+            [status-im.models.wallet :as models.wallet]
+            [status-im.models.transactions :as transactions]
+            [status-im.i18n :as i18n]))
 
 ;; login flow:
 ;;
@@ -21,6 +25,11 @@
 
 (defn login! [address password save-password?]
   (status/login address password #(re-frame/dispatch [:accounts.login.callback/login-success %])))
+
+(defn verify! [address password realm-error]
+  (status/verify address password
+                 #(re-frame/dispatch
+                   [:accounts.login.callback/verify-success % realm-error])))
 
 (defn clear-web-data! []
   (status/clear-web-data))
@@ -40,25 +49,107 @@
   (let [{:keys [address password save-password?]} (accounts.db/credentials cofx)]
     {:accounts.login/login [address password save-password?]}))
 
-(fx/defn user-login [{:keys [db] :as cofx}]
+(fx/defn initialize-wallet [cofx]
   (fx/merge cofx
-            {:db (assoc-in db [:accounts/login :processing] true)}
-            (node/initialize (get-in db [:accounts/login :address]))))
+            (models.wallet/initialize-tokens)
+            (models.wallet/update-wallet)
+            (transactions/start-sync)))
+
+(fx/defn user-login [{:keys [db] :as cofx}]
+  (let [{:keys [address password save-password?]} (accounts.db/credentials cofx)]
+    (fx/merge
+     cofx
+     (merge
+      {:db                            (assoc-in db [:accounts/login :processing] true)
+       :accounts.login/clear-web-data nil
+       :data-store/change-account     [address password]}
+      (when save-password?
+        {:keychain/save-user-password [address password]})))))
 
 (fx/defn user-login-callback
-  [{db :db :as cofx} login-result]
+  [{:keys [db web3] :as cofx} login-result]
   (let [data    (types/json->clj login-result)
         error   (:error data)
-        success (empty? error)]
+        success (empty? error)
+        address (get-in db [:account/account :address])]
     (if success
-      (let [{:keys [address password save-password?]} (accounts.db/credentials cofx)]
-        (merge {:accounts.login/clear-web-data nil
-                :data-store/change-account [address password]}
-               (when save-password?
-                 {:keychain/save-user-password [address password]})))
+      (fx/merge
+       cofx
+       {:db                       (dissoc db :accounts/login)
+        :web3/set-default-account [web3 address]
+        :web3/fetch-node-version  [web3
+                                   #(re-frame/dispatch
+                                     [:web3/fetch-node-version-callback %])]}
+       (protocol/initialize-protocol address)
+       #(when-not platform/desktop?
+          (initialize-wallet %)))
       {:db (update db :accounts/login assoc
                    :error error
                    :processing false)})))
+
+(fx/defn verify-callback
+  [{:keys [db]} verify-result realm-error]
+  (let [data    (types/json->clj verify-result)
+        error   (:error data)
+        success (empty? error)]
+    (if success
+      (let [{:keys [message]} realm-error
+            address           (get-in db [:accounts/login :address])
+            erase-button (i18n/label :migrations-erase-accounts-data-button)]
+        {:ui/show-confirmation
+         {:title               (i18n/label :invalid-key-title)
+          :content             (i18n/label
+                                :invalid-key-content
+                                {:message                         message
+                                 :erase-accounts-data-button-text erase-button})
+          :confirm-button-text (i18n/label :invalid-key-confirm)
+          :on-cancel           #(re-frame/dispatch
+                                 [:init.ui/data-reset-cancelled ""])
+          :on-accept           #(re-frame/dispatch
+                                 [:init.ui/account-data-reset-accepted address])}})
+      {:db (update db :accounts/login assoc
+                   :error error
+                   :processing false)})))
+
+(fx/defn handle-change-account-error
+  [{:keys [db] :as cofx} error]
+  (let [{:keys [error message] :as realm-error}
+        (if (map? error)
+          error
+          {:message (str error)})
+        {:keys [address password]} (accounts.db/credentials cofx)
+        erase-button (i18n/label :migrations-erase-accounts-data-button)]
+    (case error
+      :migrations-failed
+      (let [{:keys [message]} realm-error
+            address           (get-in db [:accounts/login :address])]
+        {:ui/show-confirmation
+         {:title               (i18n/label :migrations-failed-title)
+          :content             (i18n/label
+                                :migrations-failed-content
+                                {:message                         message
+                                 :erase-accounts-data-button-text erase-button})
+          :confirm-button-text erase-button
+          :on-cancel           #(re-frame/dispatch
+                                 [:init.ui/data-reset-cancelled ""])
+          :on-accept           #(re-frame/dispatch
+                                 [:init.ui/account-data-reset-accepted address])}})
+
+      :decryption-failed
+      ;; check if decryption failed because of wrong password
+      {:accounts.login/verify [address password realm-error]}
+
+      {:ui/show-confirmation
+       {:title               (i18n/label :unknown-realm-error)
+        :content             (i18n/label
+                              :unknown-realm-error-content
+                              {:message                         message
+                               :erase-accounts-data-button-text erase-button})
+        :confirm-button-text (i18n/label :invalid-key-confirm)
+        :on-cancel           #(re-frame/dispatch
+                               [:init.ui/data-reset-cancelled ""])
+        :on-accept           #(re-frame/dispatch
+                               [:init.ui/account-data-reset-accepted address])}})))
 
 (fx/defn open-login [{:keys [db]} address photo-path name]
   {:db (-> db
@@ -86,6 +177,11 @@
  :accounts.login/login
  (fn [[address password save-password?]]
    (login! address (security/safe-unmask-data password) save-password?)))
+
+(re-frame/reg-fx
+ :accounts.login/verify
+ (fn [[address password realm-error]]
+   (verify! address (security/safe-unmask-data password) realm-error)))
 
 (re-frame/reg-fx
  :accounts.login/clear-web-data
