@@ -28,6 +28,7 @@
 (def vector-icons           #js {:default #js {}})
 (def webview-bridge         #js {:default #js {}})
 (def svg                    #js {:default #js {}})
+(def status-keycard         #js {:default #js {}})
 
 (defrecord Notification [])
 (def react-native-firebase  #js {:default #js {:notifications #js {:Notification Notification}}})
