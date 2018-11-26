@@ -34,7 +34,7 @@
    :border-radius    50})
 
 (def complete-text-container
-  {:margin-top     80
+  {;:margin-top     80
    :flex-direction :column
    :align-items    :center})
 
