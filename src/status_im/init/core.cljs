@@ -65,7 +65,8 @@
              :network/listen-to-network-status               nil
              :network/listen-to-connection-status            nil
              :hardwallet/check-nfc-support                   nil
-             :hardwallet/check-nfc-enabled                   nil}
+             :hardwallet/check-nfc-enabled                   nil
+             :hardwallet/start-module                        nil}
             (initialize-keychain)))
 
 (fx/defn initialize-app-db

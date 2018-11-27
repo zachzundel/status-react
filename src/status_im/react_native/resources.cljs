@@ -62,4 +62,5 @@
                      :height 933}
    :wallet-welcome  (js/require "./resources/images/ui/wallet-welcome.png")
    :hardwallet-card (js/require "./resources/images/ui/hardwallet-card.png")
-   :phone-nfc       (js/require "./resources/images/ui/phone-nfc.png")})
+   :phone-nfc-on    (js/require "./resources/images/ui/phone-nfc-on.png")
+   :phone-nfc-off   (js/require "./resources/images/ui/phone-nfc-off.png")})

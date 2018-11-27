@@ -49,7 +49,7 @@
   {:opacity opacity})
 
 (def hardwallet-card-image-container
-  {:margin-top  81
+  {:margin-top  24
    :flex        1
    :align-items :center})
 
@@ -67,6 +67,10 @@
   {:flex           1
    :flex-direction :column
    :align-items    :center})
+
+(def card-blank-container
+  {:flex           1
+   :flex-direction :column})
 
 (def enter-pair-code-container
   {:flex            1
@@ -87,6 +91,13 @@
    :text-align :center
    :color      colors/black})
 
+(def bottom-container
+  {:height           60
+   :justify-content  :center
+   :align-items      :center
+   :border-top-width 1
+   :border-color     colors/gray-light})
+
 (def bottom-button-container
   {:background-color colors/gray-background
    :align-items      :center
@@ -95,7 +106,17 @@
    :width            160
    :height           44
    :border-radius    10
-   :margin-bottom    40})
+   :margin-bottom    14})
+
+(def begin-button-container
+  {:background-color colors/gray-background
+   :align-items      :center
+   :justify-content  :center
+   :flex-direction   :row
+   :width            160
+   :height           44
+   :border-radius    10
+   :margin-bottom    1})
 
 (def bottom-button-text
   {:font-size      14
@@ -133,6 +154,15 @@
 (def estimated-time-text
   (assoc generating-codes-for-pairing-text :padding-top 25))
 
+(def recovery-phrase-inner-container
+  {:align-self :center})
+
+(def recovery-phrase-description
+  {:padding 16})
+
+(def recovery-phrase-description-text
+  {:color colors/black})
+
 (def waiting-indicator-container
   {:height 200})
 
@@ -142,7 +172,7 @@
   {:flex            1
    :flex-direction  :column
    :justify-content :space-between
-   :margin-top      40})
+   :margin-top      30})
 
 (def secret-keys-inner-container
   {:flex-direction :column
@@ -158,7 +188,7 @@
 
 (def puk-code-title-text
   {:font-size   17
-   :padding-top 32
+   :padding-top 12
    :color       colors/black})
 
 (def puk-code-explanation-text
@@ -176,7 +206,7 @@
   {:width           "85%"
    :android         {:margin-horizontal 16}
    :height          64
-   :margin-top      20
+   :margin-top      10
    :align-items     :center
    :justify-content :center
    :border-width    1
@@ -193,7 +223,9 @@
 (def card-ready-container secret-keys-container)
 
 (def card-ready-inner-container
-  {:align-self :center})
+  {:align-self      :center
+   :flex            1
+   :justify-content :space-between})
 
 ;; enter pair code
 
@@ -214,3 +246,43 @@
   {:font-size   15
    :padding-top 5
    :color       colors/gray})
+
+(def card-is-empty-text
+  {:color         colors/black
+   :font-size     17
+   :font-weight   :bold
+   :margin-bottom 20})
+
+(def card-is-empty-prepare-text
+  {:margin-top 10
+   :padding-horizontal 40})
+
+(def remaining-steps-container
+  {:margin-top     42
+   :margin-left    16
+   :flex           1
+   :width          "90%"
+   :flex-direction :column})
+
+(def remaining-steps-text
+  {:color     colors/gray
+   :font-size 15})
+
+(def remaining-step-row
+  {:flex-direction :row
+   :margin-top     7})
+
+(def remaining-step-row-text
+  {:border-width    1
+   :border-radius   16
+   :border-color    colors/gray-light
+   :align-items     :center
+   :justify-content :center
+   :width           32
+   :height          32})
+
+(def remaining-step-row-text2
+  {:align-items     :center
+   :justify-content :center
+   :margin-left     11})
+
