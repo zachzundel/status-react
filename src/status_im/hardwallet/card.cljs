@@ -72,6 +72,14 @@
         (then #(re-frame/dispatch [:hardwallet.callback/on-save-mnemonic-success %]))
         (catch #(re-frame/dispatch [:hardwallet.callback/on-save-mnemonic-error (str %)])))))
 
+(defn generate-and-load-key
+  [{:keys [mnemonic pairing pin]}]
+  (when pairing
+    (.. keycard
+        (generateAndLoadKey mnemonic pairing pin)
+        (then #(re-frame/dispatch [:hardwallet.callback/on-generate-and-load-key-success %]))
+        (catch #(re-frame/dispatch [:hardwallet.callback/on-generate-and-load-key-error (str %)])))))
+
 (defn get-application-info []
   (.. keycard
       getApplicationInfo

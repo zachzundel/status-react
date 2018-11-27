@@ -43,6 +43,10 @@
  card/save-mnemonic)
 
 (re-frame/reg-fx
+ :hardwallet/generate-and-load-key
+ card/generate-and-load-key)
+
+(re-frame/reg-fx
  :hardwallet/derive-key
  card/derive-key)
 

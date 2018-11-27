@@ -828,6 +828,16 @@
    (hardwallet/on-save-mnemonic-error cofx error)))
 
 (handlers/register-handler-fx
+ :hardwallet.callback/on-generate-and-load-key-success
+ (fn [cofx [_ data]]
+   (hardwallet/on-generate-and-load-key-success cofx data)))
+
+(handlers/register-handler-fx
+ :hardwallet.callback/on-generate-and-load-key-error
+ (fn [cofx [_ error]]
+   (hardwallet/on-generate-and-load-key-error cofx error)))
+
+(handlers/register-handler-fx
  :hardwallet.callback/on-pin-validated
  (fn [cofx _]
    (hardwallet/on-pin-validated cofx)))

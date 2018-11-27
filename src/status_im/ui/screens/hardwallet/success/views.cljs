@@ -20,7 +20,8 @@
                                  :size      :large}]])])
 
 (defview hardwallet-success []
-  (letsubs [public-key [:hardwallet-public-key]]
+  (letsubs [public-key [:hardwallet-public-key]
+            address [:hardwallet-address]]
     (let [processing? (reagent/atom false)]
       [react/view styles/container
        [status-bar/status-bar]
@@ -38,6 +39,11 @@
            (str
             "Public key: "
             public-key)]
+          [react/text {:style {:padding-horizontal 40
+                               :padding-top        20}}
+           (str
+            "Address: "
+            address)]
           [activity-indicator processing?]
           [react/text {:style styles/complete-text}
            (i18n/label :t/complete-exclamation)]

@@ -295,12 +295,13 @@
       {:db (assoc-in db [:hardwallet :recovery-phrase :confirm-error] (i18n/label :t/wrong-word))})))
 
 (fx/defn on-mnemonic-confirmed
-  [cofx]
-  (let [{:keys [mnemonic pairing pin]} (get-in cofx [:db :hardwallet :secrets])]
+  [{:keys [db] :as cofx}]
+  (let [{:keys [mnemonic pairing pin]} (get-in db [:hardwallet :secrets])]
     (fx/merge cofx
-              {:hardwallet/save-mnemonic {:mnemonic mnemonic
-                                          :pairing  pairing
-                                          :pin      pin}})))
+              {:db (assoc-in db [:hardwallet :setup-step] :generating-mnemonic)
+               :hardwallet/generate-and-load-key {:mnemonic mnemonic
+                                                  :pairing  pairing
+                                                  :pin      pin}})))
 
 (fx/defn on-save-mnemonic-success
   [{:keys [db] :as cofx}]
@@ -319,6 +320,22 @@
 (fx/defn on-save-mnemonic-error
   [{:keys [db]} error]
   (log/debug "[hardwallet] save mnemonic error: " error)
+  {:db (-> db
+           (assoc-in [:hardwallet :setup-step] :error)
+           (assoc-in [:hardwallet :setup-error] error))})
+
+(fx/defn on-generate-and-load-key-success
+  [{:keys [db] :as cofx} data]
+  (let [{:keys [public-key address]} (js->clj data :keywordize-keys true)]
+    (fx/merge cofx
+              {:db (-> db
+                       (assoc-in [:hardwallet :public-key] public-key)
+                       (assoc-in [:hardwallet :address] address))}
+              (navigation/navigate-to-cofx :hardwallet-success nil))))
+
+(fx/defn on-generate-and-load-key-error
+  [{:keys [db]} error]
+  (log/debug "[hardwallet] generate and load key error: " error)
   {:db (-> db
            (assoc-in [:hardwallet :setup-step] :error)
            (assoc-in [:hardwallet :setup-error] error))})
