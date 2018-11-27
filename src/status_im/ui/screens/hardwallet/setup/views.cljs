@@ -212,8 +212,7 @@
      (for [[number text] [["1" "Initialization of the card"]
                           ["2" "PUK and pairing codes displayed"]
                           ["3" "Device pairing"]
-                          ["4" "Create PIN"]
-                          ["5" "Recovery phrase"]]]
+                          ["4" "Recovery phrase"]]]
        ^{:key number} [react/view styles/remaining-step-row
                        [react/view styles/remaining-step-row-text
                         [react/text {:style {:color colors/black}}
