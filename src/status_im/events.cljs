@@ -775,6 +775,11 @@
    {:hardwallet/get-application-info nil}))
 
 (handlers/register-handler-fx
+ :hardwallet.callback/on-register-card-events
+ (fn [cofx [_ listeners]]
+   (hardwallet/on-register-card-events cofx listeners)))
+
+(handlers/register-handler-fx
  :hardwallet.callback/on-get-application-info-success
  (fn [cofx [_ info]]
    (hardwallet/on-application-info-success cofx info)))

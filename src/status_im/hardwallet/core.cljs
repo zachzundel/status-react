@@ -21,6 +21,10 @@
     (navigation/navigate-to-cofx cofx :hardwallet-authentication-method nil)
     (accounts.create/navigate-to-create-account-screen cofx)))
 
+(fx/defn on-register-card-events
+  [{:keys [db]} listeners]
+  {:db (update-in db [:hardwallet :listeners] merge listeners)})
+
 (fx/defn on-application-info-success
   [{:keys [db]} info]
   (let [info' (js->clj info :keywordize-keys true)]
@@ -83,8 +87,7 @@
 
 (fx/defn navigate-to-connect-screen [cofx]
   (fx/merge cofx
-            {:hardwallet/check-nfc-enabled    nil
-             :hardwallet/register-card-events nil}
+            {:hardwallet/check-nfc-enabled nil}
             (navigation/navigate-to-cofx :hardwallet-connect nil)))
 
 (fx/defn success-button-pressed [cofx]
@@ -145,6 +148,8 @@
               {:db                           (assoc-in db [:hardwallet :setup-step] :generating-mnemonic)
                :hardwallet/generate-mnemonic {:pairing pairing}})))
 
+(defn- try-login-with-keycard [cofx])
+
 (fx/defn on-card-connected
   [{:keys [db] :as cofx} data]
   (let [data' (js->clj data :keywordize-keys true)
@@ -152,12 +157,14 @@
     (log/debug "[hardwallet] on card connected" data')
     (log/debug "[hardwallet] " (str "tag payload: " (clojure.string/join
                                                      (map js/String.fromCharCode payload))))
-    (fx/merge cofx
-              {:db                              (-> db
-                                                    (assoc-in [:hardwallet :setup-step] :begin)
-                                                    (assoc-in [:hardwallet :card-connected?] true))
-               :hardwallet/get-application-info nil}
-              (navigation/navigate-to-cofx :hardwallet-setup nil))))
+    (if (= (:view-id db) :hardwallet-connect)
+      (fx/merge cofx
+                {:db                              (-> db
+                                                      (assoc-in [:hardwallet :setup-step] :begin)
+                                                      (assoc-in [:hardwallet :card-connected?] true))
+                 :hardwallet/get-application-info nil}
+                (navigation/navigate-to-cofx :hardwallet-setup nil))
+      (try-login-with-keycard cofx))))
 
 (fx/defn on-card-disconnected
   [{:keys [db]} data]

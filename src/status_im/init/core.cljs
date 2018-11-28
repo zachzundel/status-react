@@ -66,7 +66,8 @@
              :network/listen-to-connection-status            nil
              :hardwallet/check-nfc-support                   nil
              :hardwallet/check-nfc-enabled                   nil
-             :hardwallet/start-module                        nil}
+             :hardwallet/start-module                        nil
+             :hardwallet/register-card-events                nil}
             (initialize-keychain)))
 
 (fx/defn initialize-app-db
@@ -85,7 +86,7 @@
               :network network
               :device-UUID device-UUID
               :view-id view-id
-              :hardwallet (select-keys hardwallet [:nfc-enabled? :nfc-supported?]))})
+              :hardwallet (select-keys hardwallet [:nfc-enabled? :nfc-supported? :listeners]))})
 
 (fx/defn initialize-app
   [cofx encryption-key]
