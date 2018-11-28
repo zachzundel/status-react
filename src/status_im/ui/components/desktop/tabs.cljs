@@ -5,8 +5,7 @@
             [taoensso.timbre :as log]
             [status-im.ui.components.colors :as colors]
             [status-im.ui.components.react :as react]
-            [status-im.ui.screens.main-tabs.styles :as tabs.styles]
-            [status-im.utils.utils :as utils])
+            [status-im.ui.screens.main-tabs.styles :as tabs.styles])
   (:require-macros [status-im.utils.views :as views]))
 
 ;;TODO copy-pate with minimum modifications of status-react tabs
@@ -27,11 +26,6 @@
               :icon-active   :icons/profile-active}
     :count-subscription  :get-profile-unread-messages-number}])
 
-(defn- counter [cnt]
-  (let [[unviewed-messages-label large?] [(utils/unread-messages-count cnt) true]]
-    [react/view {:style tabs.styles/unread-messages-icon}
-     [react/text {:style (tabs.styles/unread-messages-text large?)} unviewed-messages-label]]))
-
 (defn- tab-content [{:keys [title icon-active icon-inactive]}]
   (fn [active? cnt]
     [react/view {:style tabs.styles/tab-container}
@@ -40,9 +34,7 @@
         [icons/icon icon {:style {:tint-color (if active? colors/blue colors/black)}}]])
      [react/view
       [react/text {:style (tabs.styles/tab-title active?)}
-       title]]
-     (when (pos? cnt)
-       [counter cnt])]))
+       title]]]))
 
 (def tabs-list-indexed (map-indexed vector (map #(update % :content tab-content) tabs-list-data)))
 
