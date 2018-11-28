@@ -6,21 +6,19 @@
             [status-im.utils.fx :as fx]
             [status-im.utils.platform :as platform]
             [taoensso.timbre :as log]
-            [status-im.native-module.core :as status]
-            [status-im.utils.types :as types]
-            [status-im.constants :as constants]
-            [status-im.utils.identicon :as identicon]
-            [status-im.utils.gfycat.core :as gfycat]
-            [status-im.data-store.accounts :as accounts-store]
-            [status-im.utils.hex :as utils.hex]
-            [clojure.string :as string]
             [status-im.i18n :as i18n]
-            [status-im.accounts.login.core :as accounts.login]))
+            [status-im.accounts.create.core :as accounts.create]))
 
 (defn hardwallet-supported? [{:keys [db]}]
   (and config/hardwallet-enabled?
        platform/android?
        (get-in db [:hardwallet :nfc-supported?])))
+
+(fx/defn navigate-to-authentication-method
+  [cofx]
+  (if (hardwallet-supported? cofx)
+    (navigation/navigate-to-cofx cofx :hardwallet-authentication-method nil)
+    (accounts.create/navigate-to-create-account-screen cofx)))
 
 (fx/defn on-application-info-success
   [{:keys [db]} info]
@@ -33,6 +31,18 @@
   [{:keys [db]} error]
   (log/debug "[hardwallet] application info error " error)
   {:db (assoc-in db [:hardwallet :application-info-error] error)})
+
+(fx/defn on-install-applet-success
+  [{:keys [db]} info]
+  (let [info' (js->clj info :keywordize-keys true)]
+    ;TODO remove alert
+    (js/alert "Applet installed")
+    {:db (-> db)}))
+
+(fx/defn on-install-applet-error
+  [{:keys [db]} error]
+  (log/debug "[hardwallet] install applet error " error)
+  {:db (assoc-in db [:hardwallet :setup-error] error)})
 
 (fx/defn on-derive-key-success
   [{:keys [db]} path]
@@ -77,9 +87,13 @@
             (navigation/navigate-to-cofx :hardwallet-connect nil)))
 
 (fx/defn success-button-pressed [cofx]
-  (fx/merge cofx
-            ;(accounts.login/user-login cofx)
-))
+  (let [{:keys [whisper-private-key wallet-address]} (get-in cofx [:db :hardwallet])]
+    (fx/merge cofx
+              {:hardwallet/login-with-keycard {:whisper-private-key whisper-private-key
+                                               :wallet-address     wallet-address
+                                               :on-result          #(re-frame/dispatch [:hardwallet.callback/on-login-success %])}}
+              ;(accounts.login/user-login cofx)
+)))
 
 (fx/defn pair [{:keys [db] :as cofx}]
   (let [{:keys [password]} (get-in cofx [:db :hardwallet :secrets])]
@@ -196,64 +210,8 @@
            (assoc-in [:hardwallet :setup-error] error))})
 
 (fx/defn on-pin-validated [{:keys [db] :as cofx}]
-  (let [pin (get-in db [:hardwallet :pin :original])
-        password (apply str pin)]
-    (fx/merge cofx
-              ;{:hardwallet/create-account password}
-)))
-
-;; create account start
-
-(defn create-account [password]
-  (status/create-account
-   password
-   #(re-frame/dispatch [:hardwallet.callback/create-account-success (types/json->clj %) password])))
-
-(fx/defn add-account
-  "Takes db and new account, creates map of effects describing adding account to database and realm"
-  [cofx {:keys [address] :as account}]
-  (let [db (:db cofx)
-        {:networks/keys [networks]} db
-        enriched-account (assoc account
-                                :network config/default-network
-                                :networks networks
-                                :address address)]
-    {:db                 (assoc-in db [:accounts/accounts address] enriched-account)
-     :data-store/base-tx [(accounts-store/save-account-tx enriched-account)]}))
-
-(fx/defn on-account-created
-  [{:keys [random-guid-generator
-           signing-phrase
-           status
-           db] :as cofx}
-   {:keys [pubkey address mnemonic]} password seed-backed-up]
-  (let [normalized-address (utils.hex/normalize-hex address)
-        account {:public-key             pubkey
-                 :installation-id        (random-guid-generator)
-                 :address                normalized-address
-                 :name                   (gfycat/generate-gfy pubkey)
-                 :status                 status
-                 :signed-up?             true
-                 :desktop-notifications? false
-                 :photo-path             (identicon/identicon pubkey)
-                 :signing-phrase         signing-phrase
-                 :seed-backed-up?        seed-backed-up
-                 :mnemonic               mnemonic
-                 :settings               (constants/default-account-settings)}]
-    (log/debug "account-created")
-    (when-not (string/blank? pubkey)
-      (fx/merge cofx
-                {:db (assoc db :accounts/login {:address    normalized-address
-                                                :password   password
-                                                :processing true})}
-                (add-account account)))))
-
-(fx/defn on-create-account-success [{:keys [db] :as cofx} result password]
-  (fx/merge cofx
-            {:db (assoc-in db [:hardwallet :setup-step] :recovery-phrase)}
-            (on-account-created result password false)))
-
-;; create account finish
+  (let [pin (get-in db [:hardwallet :pin :original])]
+    (fx/merge cofx)))
 
 (fx/defn recovery-phrase-start-confirmation [{:keys [db]}]
   (let [mnemonic (get-in db [:hardwallet :secrets :mnemonic])
@@ -298,7 +256,7 @@
   [{:keys [db] :as cofx}]
   (let [{:keys [mnemonic pairing pin]} (get-in db [:hardwallet :secrets])]
     (fx/merge cofx
-              {:db (assoc-in db [:hardwallet :setup-step] :generating-mnemonic)
+              {:db                               (assoc-in db [:hardwallet :setup-step] :generating-mnemonic)
                :hardwallet/generate-and-load-key {:mnemonic mnemonic
                                                   :pairing  pairing
                                                   :pin      pin}})))
@@ -326,11 +284,24 @@
 
 (fx/defn on-generate-and-load-key-success
   [{:keys [db] :as cofx} data]
-  (let [{:keys [public-key address]} (js->clj data :keywordize-keys true)]
+  (let [{:keys [whisper-public-key
+                whisper-private-key
+                whisper-address
+                wallet-address
+                db-public-key]} (js->clj data :keywordize-keys true)]
     (fx/merge cofx
               {:db (-> db
-                       (assoc-in [:hardwallet :public-key] public-key)
-                       (assoc-in [:hardwallet :address] address))}
+                       (assoc-in [:hardwallet :whisper-public-key] whisper-public-key)
+                       (assoc-in [:hardwallet :whisper-private-key] whisper-private-key)
+                       (assoc-in [:hardwallet :whisper-address] whisper-address)
+                       (assoc-in [:hardwallet :wallet-address] wallet-address)
+                       (assoc-in [:hardwallet :processing-login?] true))}
+              (accounts.create/on-account-created cofx
+                                                  {:pubkey   whisper-public-key
+                                                   :address  wallet-address
+                                                   :mnemonic ""}
+                                                  db-public-key
+                                                  true)
               (navigation/navigate-to-cofx :hardwallet-success nil))))
 
 (fx/defn on-generate-and-load-key-error
@@ -340,6 +311,35 @@
            (assoc-in [:hardwallet :setup-step] :error)
            (assoc-in [:hardwallet :setup-error] error))})
 
-(re-frame/reg-fx
- :hardwallet/create-account
- create-account)
+(fx/defn on-get-whisper-key-success
+  [{:keys [db] :as cofx} data]
+  (let [{:keys [whisper-public-key
+                whisper-private-key
+                wallet-address]} (js->clj data :keywordize-keys true)]
+    (fx/merge cofx
+              {:db                            (-> db
+                                                  (assoc-in [:hardwallet :whisper-public-key] whisper-public-key)
+                                                  (assoc-in [:hardwallet :processing-login?] true)
+                                                  ;(assoc-in [:hardwallet :address] address)
+)
+               :hardwallet/login-with-keycard {:whisper-private-key whisper-private-key
+                                               :wallet-address      wallet-address
+                                               :on-result           #(re-frame/dispatch [:hardwallet.callback/on-login-success %])}})))
+
+(fx/defn on-get-whisper-key-error
+  [{:keys [db]} error]
+  (log/debug "[hardwallet] get whisper key error: " error)
+  {:db (-> db
+           (assoc-in [:hardwallet :setup-step] :error)
+           (assoc-in [:hardwallet :setup-error] error))})
+
+(fx/defn on-login-success
+  [{:keys [db] :as cofx} data]
+  (let [data (js->clj data :keywordize-keys true)]
+    (fx/merge cofx
+              {:db (-> db
+                       (assoc-in [:hardwallet :processing-login?] false)
+                       ;(assoc-in [:hardwallet :whisper-public-key] public-key)
+                       ;(assoc-in [:hardwallet :address] address)
+)}
+              (navigation/navigate-to-cofx :home nil))))

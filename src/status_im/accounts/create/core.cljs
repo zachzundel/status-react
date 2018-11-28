@@ -8,7 +8,6 @@
             [status-im.constants :as constants]
             [status-im.data-store.accounts :as accounts-store]
             [status-im.i18n :as i18n]
-            [status-im.hardwallet.core :as hardwallet]
             [status-im.native-module.core :as status]
             [status-im.ui.screens.navigation :as navigation]
             [status-im.utils.config :as config]
@@ -120,12 +119,6 @@
                               (assoc :step :enter-password)
                               (dissoc :password :password-confirm :name :error)))}
             (navigation/navigate-to-cofx :create-account nil)))
-
-(fx/defn navigate-to-authentication-method
-  [cofx]
-  (if (hardwallet/hardwallet-supported? cofx)
-    (navigation/navigate-to-cofx cofx :hardwallet-authentication-method nil)
-    (navigate-to-create-account-screen cofx)))
 
 ;;;; COFX
 

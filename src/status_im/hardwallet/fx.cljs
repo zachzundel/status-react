@@ -1,5 +1,6 @@
 (ns status-im.hardwallet.fx
   (:require [re-frame.core :as re-frame]
+            [status-im.native-module.core :as statusgo]
             [status-im.hardwallet.card :as card]))
 
 (re-frame/reg-fx
@@ -47,9 +48,22 @@
  card/generate-and-load-key)
 
 (re-frame/reg-fx
+ :hardwallet/get-whisper-key
+ card/get-whisper-key)
+
+(re-frame/reg-fx
  :hardwallet/derive-key
  card/derive-key)
 
 (re-frame/reg-fx
  :hardwallet/export-key
  card/export-key)
+
+(re-frame/reg-fx
+ :hardwallet/login-with-keycard
+ statusgo/login-with-keycard)
+
+(re-frame/reg-fx
+ :hardwallet/install-applet
+ card/install-applet)
+

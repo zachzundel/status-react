@@ -99,3 +99,17 @@
       (exportKey pairing pin)
       (then #(re-frame/dispatch [:hardwallet.callback/on-export-key-success %]))
       (catch #(re-frame/dispatch [:hardwallet.callback/on-export-key-error (str %)]))))
+
+(defn get-whisper-key
+  [{:keys [pairing pin]}]
+  (.. keycard
+      (getWhisperKey pairing pin)
+      (then #(re-frame/dispatch [:hardwallet.callback/on-get-whisper-key-success %]))
+      (catch #(re-frame/dispatch [:hardwallet.callback/on-get-whisper-key-error (str %)]))))
+
+(defn install-applet
+  []
+  (.. keycard
+      installApplet
+      (then #(re-frame/dispatch [:hardwallet.callback/on-install-applet-success %]))
+      (catch #(re-frame/dispatch [:hardwallet.callback/on-install-applet-error (str %)]))))

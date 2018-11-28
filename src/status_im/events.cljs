@@ -195,7 +195,7 @@
 (handlers/register-handler-fx
  :accounts.create.ui/create-new-account-button-pressed
  (fn [cofx _]
-   (accounts.create/navigate-to-authentication-method cofx)))
+   (hardwallet/navigate-to-authentication-method cofx)))
 
 ;; accounts recover module
 
@@ -785,6 +785,16 @@
    (hardwallet/on-application-info-error cofx error)))
 
 (handlers/register-handler-fx
+ :hardwallet.callback/on-install-applet-success
+ (fn [cofx [_ info]]
+   (hardwallet/on-install-applet-success cofx info)))
+
+(handlers/register-handler-fx
+ :hardwallet.callback/on-install-applet-error
+ (fn [cofx [_ error]]
+   (hardwallet/on-install-applet-error cofx error)))
+
+(handlers/register-handler-fx
  :hardwallet.callback/on-derive-key-success
  (fn [cofx [_ path]]
    (hardwallet/on-derive-key-success cofx path)))
@@ -866,6 +876,9 @@
 
 (handlers/register-handler-fx
  :hardwallet.callback/on-generate-and-load-key-success
+ [(re-frame/inject-cofx :random-guid-generator)
+  (re-frame/inject-cofx :accounts.create/get-signing-phrase)
+  (re-frame/inject-cofx :accounts.create/get-status)]
  (fn [cofx [_ data]]
    (hardwallet/on-generate-and-load-key-success cofx data)))
 
@@ -875,17 +888,24 @@
    (hardwallet/on-generate-and-load-key-error cofx error)))
 
 (handlers/register-handler-fx
+ :hardwallet.callback/on-get-whisper-key-success
+ (fn [cofx [_ data]]
+   (hardwallet/on-get-whisper-key-success cofx data)))
+
+(handlers/register-handler-fx
+ :hardwallet.callback/on-get-whisper-key-error
+ (fn [cofx [_ error]]
+   (hardwallet/on-get-whisper-key-error cofx error)))
+
+(handlers/register-handler-fx
+ :hardwallet.callback/on-login-success
+ (fn [cofx [_ data]]
+   (hardwallet/on-login-success cofx data)))
+
+(handlers/register-handler-fx
  :hardwallet.callback/on-pin-validated
  (fn [cofx _]
    (hardwallet/on-pin-validated cofx)))
-
-(handlers/register-handler-fx
- :hardwallet.callback/create-account-success
- [(re-frame/inject-cofx :random-guid-generator)
-  (re-frame/inject-cofx :accounts.create/get-signing-phrase)
-  (re-frame/inject-cofx :accounts.create/get-status)]
- (fn [cofx [_ result password]]
-   (hardwallet/on-create-account-success cofx result password)))
 
 (handlers/register-handler-fx
  :hardwallet.ui/status-hardwallet-option-pressed
@@ -952,6 +972,11 @@
  :hardwallet.ui/recovery-phrase-cancel-pressed
  (fn [{:keys [db]} _]
    {:db (assoc-in db [:hardwallet :setup-step] :recovery-phrase)}))
+
+(handlers/register-handler-fx
+ :hardwallet.ui/install-applet-button-clicked
+ (fn [_ _]
+   {:hardwallet/install-applet nil}))
 
 (handlers/register-handler-fx
  :hardwallet/connection-error
