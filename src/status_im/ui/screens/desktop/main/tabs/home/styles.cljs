@@ -30,8 +30,8 @@
    :margin-right  16})
 
 (def unread-messages-icon
-  {:padding-left     5
-   :padding-right    5
+  {:padding-left     6
+   :padding-right    6
    :margin-top       2
    :height           15
    :border-radius    8
