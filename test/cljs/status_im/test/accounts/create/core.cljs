@@ -33,5 +33,3 @@
            [:db
             :node/start
             :data-store/base-tx]))))
-
-;(cljs.test/run-tests)
