@@ -288,16 +288,16 @@
                 whisper-private-key
                 whisper-address
                 wallet-address
-                db-public-key]} (js->clj data :keywordize-keys true)]
+                db-public-key]} (js->clj data :keywordize-keys true)
+        whisper-public-key' (str "0x" whisper-public-key)]
     (fx/merge cofx
               {:db (-> db
-                       (assoc-in [:hardwallet :whisper-public-key] whisper-public-key)
+                       (assoc-in [:hardwallet :whisper-public-key] whisper-public-key')
                        (assoc-in [:hardwallet :whisper-private-key] whisper-private-key)
                        (assoc-in [:hardwallet :whisper-address] whisper-address)
                        (assoc-in [:hardwallet :wallet-address] wallet-address)
                        (assoc-in [:hardwallet :processing-login?] true))}
-              (accounts.create/on-account-created cofx
-                                                  {:pubkey   whisper-public-key
+              (accounts.create/on-account-created {:pubkey   whisper-public-key'
                                                    :address  wallet-address
                                                    :mnemonic ""}
                                                   db-public-key
@@ -315,10 +315,11 @@
   [{:keys [db] :as cofx} data]
   (let [{:keys [whisper-public-key
                 whisper-private-key
-                wallet-address]} (js->clj data :keywordize-keys true)]
+                wallet-address]} (js->clj data :keywordize-keys true)
+        whisper-public-key' (str "0x" whisper-public-key)]
     (fx/merge cofx
               {:db                            (-> db
-                                                  (assoc-in [:hardwallet :whisper-public-key] whisper-public-key)
+                                                  (assoc-in [:hardwallet :whisper-public-key] whisper-public-key')
                                                   (assoc-in [:hardwallet :processing-login?] true)
                                                   ;(assoc-in [:hardwallet :address] address)
 )
