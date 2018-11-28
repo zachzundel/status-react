@@ -31,10 +31,7 @@
            [react/text {:style styles/topic-text}
             (string/capitalize (second name))]]
           [react/image {:style styles/chat-icon
-                        :source {:uri photo-path}}])
-        (when (pos? unviewed-messages-count)
-          [react/view {:style styles/unread-messages-icon}
-           [react/text {:style (styles/unread-messages-text large?)} unviewed-messages-label]])]
+                        :source {:uri photo-path}}])]
        [react/view {:style styles/chat-name-last-msg-box}
         [react/view {:style styles/chat-name-box}
          (when (and group-chat (not public?))
@@ -53,7 +50,10 @@
            (or (:text content)
                (i18n/label :no-messages-yet)))]]
        [react/view {:style styles/timestamp}
-        [chat-item/message-timestamp (:timestamp last-message)]]])))
+        [chat-item/message-timestamp (:timestamp last-message)]
+        (when (pos? unviewed-messages-count)
+          [react/view {:style styles/unread-messages-icon}
+           [react/text {:style (styles/unread-messages-text large?)} unviewed-messages-label]])]])))
 
 (defn chat-list-item [[chat-id chat]]
   [react/touchable-highlight {:on-press #(re-frame/dispatch [:chat.ui/navigate-to-chat chat-id])}

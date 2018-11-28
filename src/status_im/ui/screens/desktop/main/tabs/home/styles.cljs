@@ -30,12 +30,9 @@
    :margin-right  16})
 
 (def unread-messages-icon
-  {:position         :absolute
-   :width            22
+  {:width            22
    :height           22
    :border-radius    22
-   :left             28
-   :top              10
    :justify-content  :center
    :align-items      :center
    :background-color colors/blue})
