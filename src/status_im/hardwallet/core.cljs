@@ -7,7 +7,8 @@
             [status-im.utils.platform :as platform]
             [taoensso.timbre :as log]
             [status-im.i18n :as i18n]
-            [status-im.accounts.create.core :as accounts.create]))
+            [status-im.accounts.create.core :as accounts.create]
+            [status-im.utils.types :as types]))
 
 (defn hardwallet-supported? [{:keys [db]}]
   (and config/hardwallet-enabled?
@@ -91,7 +92,7 @@
     (fx/merge cofx
               {:hardwallet/login-with-keycard {:whisper-private-key whisper-private-key
                                                :wallet-address      wallet-address
-                                               :on-result           #(re-frame/dispatch [:hardwallet.callback/on-login-success %])}})))
+                                               :on-result           #(re-frame/dispatch [:hardwallet.callback/on-login %])}})))
 
 (fx/defn pair [{:keys [db] :as cofx}]
   (let [{:keys [password]} (get-in cofx [:db :hardwallet :secrets])]
@@ -294,6 +295,7 @@
                        (assoc-in [:hardwallet :whisper-private-key] whisper-private-key)
                        (assoc-in [:hardwallet :whisper-address] whisper-address)
                        (assoc-in [:hardwallet :wallet-address] wallet-address)
+                       (assoc-in [:hardwallet :db-public-key] db-public-key)
                        (assoc-in [:hardwallet :processing-login?] true))}
               (accounts.create/on-account-created {:pubkey   whisper-public-key'
                                                    :address  wallet-address
@@ -313,15 +315,17 @@
   [{:keys [db] :as cofx} data]
   (let [{:keys [whisper-public-key
                 whisper-private-key
-                wallet-address]} (js->clj data :keywordize-keys true)
+                wallet-address
+                db-public-key]} (js->clj data :keywordize-keys true)
         whisper-public-key' (str "0x" whisper-public-key)]
     (fx/merge cofx
               {:db                            (-> db
                                                   (assoc-in [:hardwallet :whisper-public-key] whisper-public-key')
+                                                  (assoc-in [:hardwallet :db-public-key] db-public-key)
                                                   (assoc-in [:hardwallet :processing-login?] true))
                :hardwallet/login-with-keycard {:whisper-private-key whisper-private-key
                                                :wallet-address      wallet-address
-                                               :on-result           #(re-frame/dispatch [:hardwallet.callback/on-login-success %])}})))
+                                               :on-result           #(re-frame/dispatch [:hardwallet.callback/on-login %])}})))
 
 (fx/defn on-get-whisper-key-error
   [{:keys [db]} error]
@@ -330,13 +334,14 @@
            (assoc-in [:hardwallet :setup-step] :error)
            (assoc-in [:hardwallet :setup-error] error))})
 
-(fx/defn on-login-success
+(fx/defn on-login
   [{:keys [db] :as cofx} data]
-  (let [data (js->clj data :keywordize-keys true)]
-    (fx/merge cofx
-              {:db (-> db
-                       (assoc-in [:hardwallet :processing-login?] false)
-                       ;(assoc-in [:hardwallet :whisper-public-key] public-key)
-                       ;(assoc-in [:hardwallet :address] address)
-)}
-              (navigation/navigate-to-cofx :home nil))))
+  (let [result (types/json->clj data)
+        error (:error result)
+        success (empty? error)]
+    (if success
+      (fx/merge cofx
+                {:db (-> db
+                         (assoc-in [:hardwallet :processing-login?] false))}
+                (navigation/navigate-to-cofx :home nil))
+      (log/debug "[hardwallet] login error " error))))

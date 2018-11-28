@@ -898,9 +898,9 @@
    (hardwallet/on-get-whisper-key-error cofx error)))
 
 (handlers/register-handler-fx
- :hardwallet.callback/on-login-success
+ :hardwallet.callback/on-login
  (fn [cofx [_ data]]
-   (hardwallet/on-login-success cofx data)))
+   (hardwallet/on-login cofx data)))
 
 (handlers/register-handler-fx
  :hardwallet.callback/on-pin-validated
