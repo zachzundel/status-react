@@ -90,10 +90,8 @@
   (let [{:keys [whisper-private-key wallet-address]} (get-in cofx [:db :hardwallet])]
     (fx/merge cofx
               {:hardwallet/login-with-keycard {:whisper-private-key whisper-private-key
-                                               :wallet-address     wallet-address
-                                               :on-result          #(re-frame/dispatch [:hardwallet.callback/on-login-success %])}}
-              ;(accounts.login/user-login cofx)
-)))
+                                               :wallet-address      wallet-address
+                                               :on-result           #(re-frame/dispatch [:hardwallet.callback/on-login-success %])}})))
 
 (fx/defn pair [{:keys [db] :as cofx}]
   (let [{:keys [password]} (get-in cofx [:db :hardwallet :secrets])]
@@ -320,9 +318,7 @@
     (fx/merge cofx
               {:db                            (-> db
                                                   (assoc-in [:hardwallet :whisper-public-key] whisper-public-key')
-                                                  (assoc-in [:hardwallet :processing-login?] true)
-                                                  ;(assoc-in [:hardwallet :address] address)
-)
+                                                  (assoc-in [:hardwallet :processing-login?] true))
                :hardwallet/login-with-keycard {:whisper-private-key whisper-private-key
                                                :wallet-address      wallet-address
                                                :on-result           #(re-frame/dispatch [:hardwallet.callback/on-login-success %])}})))
