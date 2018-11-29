@@ -176,6 +176,7 @@
 
 (def secret-keys-inner-container
   {:flex-direction :column
+   :justify-content :space-between
    :align-items    :center})
 
 (def secret-keys-title-container

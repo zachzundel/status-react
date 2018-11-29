@@ -97,9 +97,13 @@
                                                :wallet-address      wallet-address
                                                :on-result           #(re-frame/dispatch [:hardwallet.callback/on-login %])}})))
 
+(fx/defn load-pairing-screen [{:keys [db] :as cofx}]
+  (let [{:keys [password]} (get-in cofx [:db :hardwallet :secrets])]
+    {:db              (assoc-in db [:hardwallet :setup-step] :pairing)}))
+
 (fx/defn pair [{:keys [db] :as cofx}]
   (let [{:keys [password]} (get-in cofx [:db :hardwallet :secrets])]
-    {:db              (assoc-in db [:hardwallet :setup-step] :pairing)
+    {;:db              (assoc-in db [:hardwallet :setup-step] :pairing)
      :hardwallet/pair {:password password}}))
 
 (fx/defn return-back-from-nfc-settings [{:keys [db]}]
@@ -141,11 +145,23 @@
                  (get-in db' [:hardwallet :pin :confirmation])))
       (pin-mismatch))))
 
+(fx/defn load-loading-keys-screen
+  [{:keys [db] :as cofx}]
+  (let [{:keys [pairing]} (get-in cofx [:db :hardwallet :secrets])]
+    (fx/merge cofx
+              {:db (assoc-in db [:hardwallet :setup-step] :loading-keys)})))
+
+(fx/defn load-generating-mnemonic-screen
+  [{:keys [db] :as cofx}]
+  (let [{:keys [pairing]} (get-in cofx [:db :hardwallet :secrets])]
+    (fx/merge cofx
+              {:db (assoc-in db [:hardwallet :setup-step] :generating-mnemonic)})))
+
 (fx/defn generate-mnemonic
   [{:keys [db] :as cofx}]
   (let [{:keys [pairing]} (get-in cofx [:db :hardwallet :secrets])]
     (fx/merge cofx
-              {:db                           (assoc-in db [:hardwallet :setup-step] :generating-mnemonic)
+              {;:db                           (assoc-in db [:hardwallet :setup-step] :generating-mnemonic)
                :hardwallet/generate-mnemonic {:pairing pairing}})))
 
 (defn- try-login-with-keycard [cofx])
@@ -170,10 +186,15 @@
   [{:keys [db]} data]
   {:db (assoc-in db [:hardwallet :card-connected?] false)})
 
+(fx/defn load-preparing-screen
+  [{:keys [db]}]
+  {:db (assoc-in db [:hardwallet :setup-step] :preparing)})
+
 (fx/defn initialize-card
   [{:keys [db]}]
   {:hardwallet/initialize-card nil
-   :db                         (assoc-in db [:hardwallet :setup-step] :preparing)})
+   ;:db                         (assoc-in db [:hardwallet :setup-step] :preparing)
+})
 
 (fx/defn on-initialization-success
   [{:keys [db]} secrets]
@@ -258,11 +279,11 @@
         (show-recover-confirmation))
       {:db (assoc-in db [:hardwallet :recovery-phrase :confirm-error] (i18n/label :t/wrong-word))})))
 
-(fx/defn on-mnemonic-confirmed
+(fx/defn generate-and-load-key
   [{:keys [db] :as cofx}]
   (let [{:keys [mnemonic pairing pin]} (get-in db [:hardwallet :secrets])]
     (fx/merge cofx
-              {:db                               (assoc-in db [:hardwallet :setup-step] :generating-mnemonic)
+              {;:db                               (assoc-in db [:hardwallet :setup-step] :generating-mnemonic)
                :hardwallet/generate-and-load-key {:mnemonic mnemonic
                                                   :pairing  pairing
                                                   :pin      pin}})))

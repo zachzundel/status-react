@@ -21,44 +21,45 @@
 (defview secret-keys []
   (letsubs [secrets [:hardwallet-secrets]]
     [react/view styles/secret-keys-container
-     [react/view styles/secret-keys-inner-container
-      [react/view styles/secret-keys-title-container
-       #_[components/wizard-step 2]
-       [react/text {:style           styles/secret-keys-title-text
-                    :number-of-lines 2
-                    :font            :bold}
-        (i18n/label :t/write-down-and-store-securely)]]
-      [react/text {:style styles/puk-code-title-text
-                   :font  :bold}
-       (i18n/label :t/pin-code)]
-      [react/text {:style styles/puk-code-explanation-text}
-       "Unlocks the card"]
-      [react/view styles/puk-code-numbers-container
-       [react/view styles/puk-code-numbers-inner-container
-        [react/text {:style styles/puk-code-text
-                     :font  :bold}
-         (:pin secrets)]]]
-      [react/text {:style styles/puk-code-title-text
-                   :font  :bold}
-       (i18n/label :t/puk-code)]
-      [react/text {:style styles/puk-code-explanation-text}
-       (i18n/label :t/puk-code-explanation)]
-      [react/view styles/puk-code-numbers-container
-       [react/view styles/puk-code-numbers-inner-container
-        [react/text {:style styles/puk-code-text
-                     :font  :bold}
-         (:puk secrets)]]]
-      [react/text {:style styles/puk-code-title-text
-                   :font  :bold}
-       (i18n/label :t/pair-code)]
-      [react/text {:style           styles/puk-code-explanation-text
-                   :number-of-lines 2}
-       (i18n/label :t/pair-code-explanation)]
-      [react/view styles/puk-code-numbers-container
-       [react/view styles/puk-code-numbers-inner-container
-        [react/text {:style styles/puk-code-text
-                     :font  :bold}
-         (:password secrets)]]]]
+     [react/scroll-view {:margin-bottom 10}
+      [react/view styles/secret-keys-inner-container
+       [react/view styles/secret-keys-title-container
+        #_[components/wizard-step 2]
+        [react/text {:style           styles/secret-keys-title-text
+                     :number-of-lines 2
+                     :font            :bold}
+         (i18n/label :t/write-down-and-store-securely)]]
+       [react/text {:style styles/puk-code-title-text
+                    :font  :bold}
+        (i18n/label :t/pin-code)]
+       [react/text {:style styles/puk-code-explanation-text}
+        "Unlocks the card"]
+       [react/view styles/puk-code-numbers-container
+        [react/view styles/puk-code-numbers-inner-container
+         [react/text {:style styles/puk-code-text
+                      :font  :bold}
+          (:pin secrets)]]]
+       [react/text {:style styles/puk-code-title-text
+                    :font  :bold}
+        (i18n/label :t/puk-code)]
+       [react/text {:style styles/puk-code-explanation-text}
+        (i18n/label :t/puk-code-explanation)]
+       [react/view styles/puk-code-numbers-container
+        [react/view styles/puk-code-numbers-inner-container
+         [react/text {:style styles/puk-code-text
+                      :font  :bold}
+          (:puk secrets)]]]
+       [react/text {:style styles/puk-code-title-text
+                    :font  :bold}
+        (i18n/label :t/pair-code)]
+       [react/text {:style           styles/puk-code-explanation-text
+                    :number-of-lines 2}
+        (i18n/label :t/pair-code-explanation)]
+       [react/view styles/puk-code-numbers-container
+        [react/view styles/puk-code-numbers-inner-container
+         [react/text {:style styles/puk-code-text
+                      :font  :bold}
+          (:password secrets)]]]]]
      [react/view styles/next-button-container
       [react/view components.styles/flex]
       [components.common/bottom-button
@@ -279,25 +280,79 @@
                    :number-of-lines 2}
        (i18n/label text-label)])
     [react/text {:style styles/estimated-time-text}
-     ;TODO(dmitryn): move to transations
+     ;TODO: move to translations
      "This will take a few seconds"]]
    [react/view styles/waiting-indicator-container
     [react/activity-indicator {:animating true
                                :size      :large}]]])
 
-(defn preparing []
-  [loading-view {:title-label            :t/preparing-card
-                 :text-label             :t/generating-codes-for-pairing
-                 :estimated-time-seconds 20
-                 :step-number            1}])
+(defview preparing []
+  {:component-did-mount #(re-frame/dispatch [:hardwallet.ui.lifecycle/preparing-screen-did-mount])}
+  [react/view styles/loading-view-container
+   [react/view styles/center-container
+    [react/text {:style styles/center-title-text
+                 :font  :bold}
+     (i18n/label :t/preparing-card)]
+    [react/text {:style           styles/generating-codes-for-pairing-text
+                 :number-of-lines 2}
+     (i18n/label :t/generating-codes-for-pairing)]
+    [react/text {:style styles/estimated-time-text}
+     ;TODO: move to translations
+     "This will take a few seconds"]]
+   [react/view styles/waiting-indicator-container
+    [react/activity-indicator {:animating true
+                               :size      :large}]]])
 
-(defn pairing []
-  [loading-view {:title-label            :t/pairing-card
-                 :estimated-time-seconds 30}])
+(defview generating-mnemonic []
+  {:component-did-mount #(re-frame/dispatch [:hardwallet.ui.lifecycle/generating-mnemonic-screen-did-mount])}
+  [react/view styles/loading-view-container
+   [react/view styles/center-container
+    [react/text {:style styles/center-title-text
+                 :font  :bold}
+     (i18n/label :t/generating-mnemonic)]
+    ;[react/text {:style           styles/generating-codes-for-pairing-text
+    ;             :number-of-lines 2}
+    ; (i18n/label :t/generating-codes-for-pairing)]
+    [react/text {:style styles/estimated-time-text}
+     ;TODO: move to translations
+     "This will take a few seconds"]]
+   [react/view styles/waiting-indicator-container
+    [react/activity-indicator {:animating true
+                               :size      :large}]]])
 
-(defn generating-mnemonic []
-  [loading-view {:title-label            :t/generating-mnemonic
-                 :estimated-time-seconds 30}])
+(defview loading-keys []
+  ;{:component-did-mount #(re-frame/dispatch [:hardwallet.ui.lifecycle/loading-keys-screen-did-mount])}
+  [react/view styles/loading-view-container
+   [react/view styles/center-container
+    [react/text {:style styles/center-title-text
+                 :font  :bold}
+     "Finishing card setup"]
+    [react/text {:style           styles/generating-codes-for-pairing-text
+                 :number-of-lines 2}
+     "> Loading keys to the card\n> Generating account"]
+    [react/text {:style styles/estimated-time-text}
+     ;TODO: move to translations
+     "This will take a few seconds"]]
+   [react/view styles/waiting-indicator-container
+    [react/activity-indicator {:animating true
+                               :size      :large}]]])
+
+(defview pairing []
+  {:component-did-mount #(re-frame/dispatch [:hardwallet.ui.lifecycle/pairing-screen-did-mount])}
+  [react/view styles/loading-view-container
+   [react/view styles/center-container
+    [react/text {:style styles/center-title-text
+                 :font  :bold}
+     (i18n/label :t/pairing-card)]
+    ;[react/text {:style           styles/generating-codes-for-pairing-text
+    ;             :number-of-lines 2}
+    ; (i18n/label :t/generating-codes-for-pairing)]
+    [react/text {:style styles/estimated-time-text}
+     ;TODO: move to translations
+     "This will take a few seconds"]]
+   [react/view styles/waiting-indicator-container
+    [react/activity-indicator {:animating true
+                               :size      :large}]]])
 
 (defn complete []
   [loading-view {:title-label            :t/completing-card-setup
@@ -313,6 +368,7 @@
     :complete [complete]
     :pair [pair]
     :generating-mnemonic [generating-mnemonic]
+    :loading-keys [loading-keys]
     :enter-pair-code [enter-pair-code]
     :no-slots [no-slots]
     :card-already-linked [card-already-linked]

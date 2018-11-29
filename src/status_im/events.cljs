@@ -937,6 +937,11 @@
 (handlers/register-handler-fx
  :hardwallet.ui/begin-setup-button-pressed
  (fn [cofx _]
+   (hardwallet/load-preparing-screen cofx)))
+
+(handlers/register-handler-fx
+ :hardwallet.ui.lifecycle/preparing-screen-did-mount
+ (fn [cofx _]
    (hardwallet/initialize-card cofx)))
 
 (handlers/register-handler-fx
@@ -971,7 +976,7 @@
 (handlers/register-handler-fx
  :hardwallet.ui/recovery-phrase-confirm-pressed
  (fn [cofx _]
-   (hardwallet/on-mnemonic-confirmed cofx)))
+   (hardwallet/load-loading-keys-screen cofx)))
 
 (handlers/register-handler-fx
  :hardwallet.ui/recovery-phrase-cancel-pressed
@@ -1010,6 +1015,11 @@
 (handlers/register-handler-fx
  :hardwallet.ui/secret-keys-dialog-confirm-pressed
  (fn [cofx _]
+   (hardwallet/load-pairing-screen cofx)))
+
+(handlers/register-handler-fx
+ :hardwallet.ui.lifecycle/pairing-screen-did-mount
+ (fn [cofx _]
    (hardwallet/pair cofx)))
 
 (handlers/register-handler-fx
@@ -1031,7 +1041,17 @@
 (handlers/register-handler-fx
  :hardwallet.ui/generate-mnemonic-button-pressed
  (fn [cofx _]
+   (hardwallet/load-generating-mnemonic-screen cofx)))
+
+(handlers/register-handler-fx
+ :hardwallet.ui.lifecycle/generating-mnemonic-screen-did-mount
+ (fn [cofx _]
    (hardwallet/generate-mnemonic cofx)))
+
+(handlers/register-handler-fx
+ :hardwallet.ui.lifecycle/loading-keys-screen-did-mount
+ (fn [cofx _]
+   (hardwallet/generate-and-load-key cofx)))
 
 (handlers/register-handler-fx
  :hardwallet.ui/create-pin-button-pressed
