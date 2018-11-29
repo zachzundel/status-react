@@ -54,7 +54,7 @@
            signing-phrase
            status
            db] :as cofx}
-   {:keys [pubkey address mnemonic]} password seed-backed-up]
+   {:keys [pubkey address mnemonic keycard-instance-uid]} password seed-backed-up]
   (let [normalized-address (utils.hex/normalize-hex address)
         account            {:public-key             pubkey
                             :installation-id        (random-guid-generator)
@@ -67,6 +67,7 @@
                             :signing-phrase         signing-phrase
                             :seed-backed-up?        seed-backed-up
                             :mnemonic               mnemonic
+                            :keycard-instance-uid   keycard-instance-uid
                             :settings               (constants/default-account-settings)}]
     (log/debug "account-created")
     (when-not (string/blank? pubkey)

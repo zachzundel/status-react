@@ -206,6 +206,10 @@
   (= (get-in cofx [:db :view-id])
      :create-account))
 
+(defn finishing-hardwallet-setup? [cofx]
+  (= (get-in cofx [:db :view-id])
+     :hardwallet-success))
+
 (fx/defn initialize-account [{:keys [db web3] :as cofx} address]
   (fx/merge cofx
             {:web3/set-default-account    [web3 address]
@@ -224,7 +228,8 @@
             #(when-not platform/desktop?
                (initialize-wallet %))
             (accounts.update/update-sign-in-time)
-            #(when-not (creating-account? %)
+            #(when-not (or (creating-account? %)
+                           (finishing-hardwallet-setup? %))
                (login-only-events % address))))
 
 (re-frame/reg-fx

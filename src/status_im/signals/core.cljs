@@ -14,8 +14,7 @@
   [{db :db :as cofx}]
   (let [{:node/keys [restart? address]} db
         can-login? (and (not restart?)
-                        (:password (accounts.db/credentials cofx))
-                        (not (get-in db [:hardwallet :processing-login?])))]
+                        (:password (accounts.db/credentials cofx)))]
     (fx/merge cofx
               {:db (-> db
                        (assoc :node/status :started)
