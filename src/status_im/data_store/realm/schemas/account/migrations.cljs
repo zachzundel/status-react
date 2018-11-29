@@ -240,3 +240,5 @@
                                                     "status = \"received\""))
                                     (.-length))]
         (aset chat "unviewed-messages-count" user-statuses-count)))))
+
+(defn v27 [old-realm new-realm])

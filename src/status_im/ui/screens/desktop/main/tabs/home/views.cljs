@@ -101,14 +101,7 @@
      (fn [this]
        (let [[_ loading?] (.. this -props -argv)]
          (when loading?
-           (re-frame/dispatch [:init-chats]))))
-
-     :component-did-update
-     (fn [this [_ old-loading?]]
-       (let [[_ loading?] (.. this -props -argv)]
-         (when (and (false? loading?)
-                    (true? old-loading?))
-           (re-frame/dispatch [:load-chats-messages]))))}
+           (re-frame/dispatch [:init-chats]))))}
     [react/view {:style styles/chat-list-view}
      [react/view {:style styles/chat-list-header}
       [search-input search-filter]
