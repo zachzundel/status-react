@@ -325,7 +325,7 @@
   (when (and fcm-token (= status :sent))
     (let [payload {:from (accounts.db/current-public-key cofx)
                    :to   (get-in cofx [:db :current-chat-id])}]
-      {:send-notification {:data-payload {:msg (js/JSON.stringify (clj->js payload))}
+      {:send-notification {:data-payload (notifications/create-notification-payload payload)
                            :tokens       [fcm-token]}})))
 
 (fx/defn update-message-status [{:keys [db]} chat-id message-id status]

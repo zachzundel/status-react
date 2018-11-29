@@ -32,8 +32,8 @@
 (defn create-notification-payload
   [{:keys [from to] :as payload}]
   (if (and from to)
-    #js {:msg (js/JSON.stringify #js {:from from
-                                      :to   to})}
+    {:msg (js/JSON.stringify #js {:from from
+                                  :to   to})}
     (throw (str "Invalid push notification payload" payload))))
 
 (when platform/desktop?
@@ -65,8 +65,8 @@
       (.. notification
           (setTitle title)
           (setBody body)
-          (setData (create-notification-payload {:from from
-                                                 :to   to}))
+          (setData (clj->js (create-notification-payload {:from from
+                                                          :to to})))
           (setSound sound-name))
       (when platform/android?
         (.. notification
