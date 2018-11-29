@@ -19,31 +19,33 @@
       [react/activity-indicator {:animating true
                                  :size      :large}]])])
 
-(defn hardwallet-success []
-  (let [processing? (reagent/atom false)]
-    [react/view styles/container
-     [status-bar/status-bar]
-     [react/view components.styles/flex
-      [react/view styles/inner-container
-       [react/view styles/hardwallet-card-image-container
-        [react/view styles/icon-check-container
-         [react/view styles/icon-check-inner-container
-          [vector-icons/icon :icons/check {:color  colors/green
-                                           :width  30
-                                           :height 30}]]]]
-       [react/view styles/complete-text-container
-        [activity-indicator processing?]
-        [react/text {:style styles/complete-text}
-         (i18n/label :t/complete-exclamation)]
-        [react/text {:style           styles/complete-information-text
-                     :number-of-lines 3}
-         (i18n/label :t/complete-hardwallet-setup)]
-        [react/touchable-highlight
-         {:on-press #(do
-                       (reset! processing? true)
-                       (re-frame/dispatch [:hardwallet.ui/success-button-pressed]))}
-         [react/view styles/bottom-action-container
-          [react/text {:style      styles/bottom-action-text
-                       :font       :medium
-                       :uppercase? true}
-           (i18n/label :t/okay)]]]]]]]))
+(defview hardwallet-success []
+  (letsubs [account [:account/account]]
+    (let [processing? (reagent/atom false)]
+      [react/view styles/container
+       [status-bar/status-bar]
+       [react/view components.styles/flex
+        [react/view styles/inner-container
+         [react/view styles/hardwallet-card-image-container
+          [react/view styles/icon-check-container
+           [react/view styles/icon-check-inner-container
+            [vector-icons/icon :icons/check {:color  colors/green
+                                             :width  30
+                                             :height 30}]]]]
+         [react/view styles/complete-text-container
+          [activity-indicator processing?]
+          [react/text {:style styles/complete-text}
+           (i18n/label :t/complete-exclamation)]
+          [react/text {:style           styles/complete-information-text
+                       :number-of-lines 3}
+           (i18n/label :t/complete-hardwallet-setup)]
+          (when account
+            [react/touchable-highlight
+             {:on-press #(do
+                           (reset! processing? true)
+                           (re-frame/dispatch [:hardwallet.ui/success-button-pressed]))}
+             [react/view styles/bottom-action-container
+              [react/text {:style      styles/bottom-action-text
+                           :font       :medium
+                           :uppercase? true}
+               (i18n/label :t/okay)]]])]]]])))
