@@ -63,22 +63,9 @@ $(STATUS_GO_IOS_ARCH):
 
 $(STATUS_GO_DRO_ARCH):
 	mkdir -p $(ANDROID_LIBS_DIR)
-	curl --fail --silent --location \
-		"$(GITHUB_URL)/$(STATUS_GO_VER)/status-go-android.aar" \
-		--output "$(STATUS_GO_DRO_ARCH)"; \
-	if [ $$? -ne 0 ]; then \
-		echo "Failed to download from GitHub, checking DigitalOcean Bucket..."; \
-		curl --fail --silent --location \
-			"${DO_SPACE_URL}/status-go-android-$(STATUS_GO_VER).aar" \
-			--output "$(STATUS_GO_DRO_ARCH)"; \
-		if [ $$? -ne 0 ]; then \
-			echo "Failed to download from DigitalOcean Spaces!"; \
-
-	        curl --fail --silent --location \
-		        "https://ci.status.im/job/status-go/job/parallel/130/artifact/status-go-android-181128-112920-2b4e5f.aar" \
-		        --output "$(STATUS_GO_DRO_ARCH)"; \
-		fi \
-	fi
+    curl --fail --silent --location \
+        "https://ci.status.im/job/status-go/job/parallel/130/artifact/status-go-android-181128-112920-2b4e5f.aar" \
+        --output "$(STATUS_GO_DRO_ARCH)"; \
 
 prepare-ios: $(STATUS_GO_IOS_ARCH) ##@prepare Install and prepare iOS-specific dependencies
 	scripts/prepare-for-platform.sh ios
