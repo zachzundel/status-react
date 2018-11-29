@@ -8,6 +8,7 @@
             [taoensso.timbre :as log]
             [status-im.i18n :as i18n]
             [status-im.accounts.create.core :as accounts.create]
+            [status-im.accounts.login.core :as login.core]
             [status-im.utils.types :as types]))
 
 (defn hardwallet-supported? [{:keys [db]}]
@@ -370,6 +371,7 @@
     (if success
       (fx/merge cofx
                 {:db (-> db
+                         (assoc :accounts/create {:show-welcome? true})
                          (assoc-in [:hardwallet :processing-login?] false))}
-                (navigation/navigate-to-cofx :home nil))
+                (login.core/user-login-callback data))
       (log/debug "[hardwallet] login error " error))))
