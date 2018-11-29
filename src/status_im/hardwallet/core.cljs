@@ -215,9 +215,10 @@
 
 (fx/defn on-pairing-success
   [{:keys [db]} pairing]
-  {:db (-> db
-           (assoc-in [:hardwallet :setup-step] :card-ready)
-           (assoc-in [:hardwallet :secrets :pairing] pairing))})
+  {:hardwallet/persist-pairing pairing
+   :db                         (-> db
+                                   (assoc-in [:hardwallet :setup-step] :card-ready)
+                                   (assoc-in [:hardwallet :secrets :pairing] pairing))})
 
 (fx/defn on-pairing-error
   [{:keys [db]} error]

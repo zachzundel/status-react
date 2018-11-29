@@ -775,6 +775,12 @@
    {:hardwallet/get-application-info nil}))
 
 (handlers/register-handler-fx
+ :hardwallet.callback/on-retrieve-pairing-success
+ (fn [{:keys [db]} [_ pairing]]
+   (when-not (empty? pairing)
+     {:db (assoc-in db [:hardwallet :secrets :pairing] pairing)})))
+
+(handlers/register-handler-fx
  :hardwallet.callback/on-register-card-events
  (fn [cofx [_ listeners]]
    (hardwallet/on-register-card-events cofx listeners)))

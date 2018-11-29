@@ -1,7 +1,8 @@
 (ns status-im.hardwallet.fx
   (:require [re-frame.core :as re-frame]
             [status-im.native-module.core :as statusgo]
-            [status-im.hardwallet.card :as card]))
+            [status-im.hardwallet.card :as card]
+            [status-im.react-native.js-dependencies :as js-dependencies]))
 
 (re-frame/reg-fx
  :hardwallet/get-application-info
@@ -67,3 +68,18 @@
  :hardwallet/install-applet
  card/install-applet)
 
+(re-frame/reg-fx
+ :hardwallet/persist-pairing
+ (fn [pairing]
+     ;TODO not secure, store to keychain or to android keystore
+   (.. js-dependencies/react-native
+       -AsyncStorage
+       (setItem "status-keycard-pairing" pairing))))
+
+(re-frame/reg-fx
+ :hardwallet/retrieve-pairing
+ (fn []
+   (.. js-dependencies/react-native
+       -AsyncStorage
+       (getItem "status-keycard-pairing")
+       (then #(re-frame/dispatch [:hardwallet.callback/on-retrieve-pairing-success %])))))
