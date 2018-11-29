@@ -72,8 +72,9 @@
 
 (fx/defn initialize-app-db
   "Initialize db to initial state"
-  [{{:keys [status-module-initialized? view-id hardwallet
-            network-status network peers-count peers-summary device-UUID]
+  [{{:keys [status-module-initialized? view-id
+            network-status network peers-count peers-summary device-UUID
+            hardwallet]
      :node/keys [status]
      :or   {network (get app-db :network)}} :db}]
   {:db (assoc app-db
@@ -84,14 +85,14 @@
               :status-module-initialized? (or platform/ios? js/goog.DEBUG status-module-initialized?)
               :node/status status
               :network network
+              :hardwallet hardwallet
               :device-UUID device-UUID
-              :view-id view-id
-              :hardwallet (select-keys hardwallet [:nfc-enabled? :nfc-supported? :listeners]))})
+              :view-id view-id)})
 
 (fx/defn initialize-app
   [cofx encryption-key]
   (fx/merge cofx
-            {:init/init-store encryption-key}
+            {:init/init-store                 encryption-key}
             (initialize-app-db)
             (node/initialize nil)))
 
@@ -154,7 +155,8 @@
   (let [{:universal-links/keys [url]
          :keys [accounts/accounts accounts/create contacts/contacts networks/networks
                 network network-status peers-count peers-summary view-id navigation-stack
-                pairing/installations status-module-initialized? device-UUID semaphores]
+                pairing/installations status-module-initialized? device-UUID semaphores
+                hardwallet]
          :node/keys [status]
          :or   {network (get app-db :network)}} db
         current-account (get accounts address)
@@ -176,6 +178,7 @@
                         :peers-count peers-count
                         :device-UUID device-UUID
                         :semaphores semaphores
+                        :hardwallet hardwallet
                         :web3 web3)
            (= view-id :create-account)
            (assoc-in [:accounts/create :step] :enter-name))}))
