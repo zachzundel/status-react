@@ -211,7 +211,7 @@ function install_react_native_cli() {
 }
 
 function install_yarn() {
-  if ! program_exists "node"; then
+  if ! program_exists "yarn"; then
     npm install -g yarn@1.12.3 # Install the latest yarn
   else
     cecho "+ yarn already installed... skipping."
