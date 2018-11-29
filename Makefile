@@ -63,9 +63,9 @@ $(STATUS_GO_IOS_ARCH):
 
 $(STATUS_GO_DRO_ARCH):
 	mkdir -p $(ANDROID_LIBS_DIR)
-    curl --fail --silent --location \
+    curl --silent --location \
         "https://ci.status.im/job/status-go/job/parallel/130/artifact/status-go-android-181128-112920-2b4e5f.aar" \
-        --output "$(STATUS_GO_DRO_ARCH)"; \
+        --output "$(STATUS_GO_DRO_ARCH)"
 
 prepare-ios: $(STATUS_GO_IOS_ARCH) ##@prepare Install and prepare iOS-specific dependencies
 	scripts/prepare-for-platform.sh ios
