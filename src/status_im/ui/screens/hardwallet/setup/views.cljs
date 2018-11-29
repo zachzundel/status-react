@@ -321,7 +321,7 @@
                                :size      :large}]]])
 
 (defview loading-keys []
-  ;{:component-did-mount #(re-frame/dispatch [:hardwallet.ui.lifecycle/loading-keys-screen-did-mount])}
+  {:component-did-mount #(re-frame/dispatch [:hardwallet.ui.lifecycle/loading-keys-screen-did-mount])}
   [react/view styles/loading-view-container
    [react/view styles/center-container
     [react/text {:style styles/center-title-text
